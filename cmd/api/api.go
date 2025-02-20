@@ -100,7 +100,24 @@ func (app *application) mount() *chi.Mux {
 		r.Get("/swagger/*", httpSwagger.Handler(
 			httpSwagger.URL(docsUrl),
 		))
+		r.Route("/expertise", func(r chi.Router) {
+			r.Get("/", app.getExpertiseHandler)
+			r.Post("/create", app.createExpertiseHandler)
+			r.Get("/{expertiseID}", app.getExpertiseHandlerByID)
+			r.Patch("/{expertiseID}", app.updateExpertiseHandler)
+			r.Delete("/{expertiseID}", app.deleteExpertiseHandler)
+		})
+		r.Route("/discipline", func(r chi.Router) {
+			r.Get("/", app.getDisciplineHandler)
+			r.Post("/create", app.createDisciplineHandler)
+			r.Get("/{disciplineField}", app.getDisciplineHandlerByField)
+			r.Patch("/{disciplineID}", app.updateDisciplineHandler)
+			r.Delete("/{disciplineID}", app.deleteDisciplineHandler)
+		})
 		r.Route("/users", func(r chi.Router) {
+			// r.Get("/auth/google/login", app.googleLogin)
+			// r.Get("/auth/google/callback", app.googleCallback)
+
 			r.Put("/activate/{token}", app.activateUserHandler)
 
 			r.Route("/{userID}", func(r chi.Router) {

@@ -13,6 +13,20 @@ definitions:
     - email
     - password
     type: object
+  main.RegisterDisciplinePayload:
+    properties:
+      field:
+        type: string
+      subfield:
+        type: string
+    type: object
+  main.RegisterExpertisePayload:
+    properties:
+      icon_svg:
+        type: string
+      name:
+        type: string
+    type: object
   main.RegisterUserPayload:
     properties:
       email:
@@ -30,6 +44,20 @@ definitions:
     - password
     - username
     type: object
+  main.UpdateDisciplinePayload:
+    properties:
+      field:
+        type: string
+      subfield:
+        type: string
+    type: object
+  main.UpdateExpertisePayload:
+    properties:
+      icon_svg:
+        type: string
+      name:
+        type: string
+    type: object
   main.UserWithToken:
     properties:
       created_at:
@@ -43,6 +71,24 @@ definitions:
       token:
         type: string
       username:
+        type: string
+    type: object
+  store.Discipline:
+    properties:
+      field:
+        type: string
+      id:
+        type: integer
+      subfield:
+        type: string
+    type: object
+  store.Expertise:
+    properties:
+      icon_svg:
+        type: string
+      id:
+        type: integer
+      name:
         type: string
     type: object
   store.User:
@@ -131,6 +177,315 @@ paths:
       summary: Registers a user
       tags:
       - authentication
+  /discipline:
+    get:
+      consumes:
+      - application/json
+      description: Fetches all discipline
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Discipline'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetches all discipline
+      tags:
+      - discipline
+  /discipline/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a discipline field by ID
+      parameters:
+      - description: Discipline ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Deletes a discipline field
+      tags:
+      - discipline
+    patch:
+      consumes:
+      - application/json
+      description: Updates a discipline by ID
+      parameters:
+      - description: Discipline ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Discipline payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.UpdateDisciplinePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Discipline'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Updates a discipline field
+      tags:
+      - discipline
+  /discipline/{string}:
+    get:
+      consumes:
+      - application/json
+      description: Fetches discipline by Field
+      parameters:
+      - description: Discipline Field
+        in: path
+        name: string
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Discipline'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetches discipline
+      tags:
+      - discipline
+  /discipline/create:
+    post:
+      consumes:
+      - application/json
+      description: creates a new discipline field
+      parameters:
+      - description: discipline
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.RegisterDisciplinePayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Discipline registered
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Creates a new discipline
+      tags:
+      - discipline
+  /expertise:
+    get:
+      consumes:
+      - application/json
+      description: Fetches all expertise
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Expertise'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetches all expertise
+      tags:
+      - expertise
+  /expertise/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a expertise field by ID
+      parameters:
+      - description: Discipline ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Deletes a expertise field
+      tags:
+      - expertise
+    get:
+      consumes:
+      - application/json
+      description: Fetches expertise by ID
+      parameters:
+      - description: Expertise ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Expertise'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetches expertise
+      tags:
+      - expertise
+    patch:
+      consumes:
+      - application/json
+      description: Updates a expertise by ID
+      parameters:
+      - description: Expertise ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Expertise payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.UpdateExpertisePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Expertise'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Updates a expertise field
+      tags:
+      - expertise
+  /expertise/create:
+    post:
+      consumes:
+      - application/json
+      description: creates a new expertise field
+      parameters:
+      - description: expertise
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.RegisterExpertisePayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Expertise registered
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Creates a new expertise
+      tags:
+      - expertise
   /health:
     get:
       description: Healthcheck endpoint

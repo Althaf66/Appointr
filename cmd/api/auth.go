@@ -1,7 +1,9 @@
 package main
 
 import (
+	// "crypto/rand"
 	"crypto/sha256"
+	// "encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"net/http"
@@ -11,6 +13,8 @@ import (
 	"github.com/Althaf66/Appointr/internal/store"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	// "golang.org/x/oauth2"
+	// "golang.org/x/oauth2/google"
 )
 
 type RegisterUserPayload struct {
@@ -18,6 +22,14 @@ type RegisterUserPayload struct {
 	Email    string `json:"email" validate:"required,email,max=255"`
 	Password string `json:"password" validate:"required,min=3,max=72"`
 }
+
+// var googleOauthConfig = &oauth2.Config{
+// 	ClientID:     "28963359750-r8cv93ou5hi4ddg9i4prkc4pl1376895.apps.googleusercontent.com",
+// 	ClientSecret: "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",
+// 	RedirectURL:  "http://localhost:8080/auth/google/callback",
+// 	Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
+// 	Endpoint:     google.Endpoint,
+// }
 
 type UserWithToken struct {
 	*store.User
@@ -176,3 +188,78 @@ func (app *application) createTokenHandler(w http.ResponseWriter, r *http.Reques
 		app.internalServerError(w, r, err)
 	}
 }
+
+// func generateState() string {
+// 	b := make([]byte, 16)
+// 	_, _ = rand.Read(b)
+// 	return base64.URLEncoding.EncodeToString(b)
+// }
+
+// func (app *application) googleLogin(w http.ResponseWriter, r *http.Request) {
+// 	state := generateState()
+// 	http.SetCookie(w, &http.Cookie{
+// 		Name:     "oauthstate",
+// 		Value:    state,
+// 		Expires:  time.Now().Add(1 * time.Hour),
+// 		HttpOnly: true,
+// 	})
+// 	url := googleOauthConfig.AuthCodeURL(state)
+// 	http.Redirect(w, r, url, http.StatusFound)
+// }
+
+// func (app *application) googleCallback(w http.ResponseWriter, r *http.Request) {
+// 	var payload RegisterUserPayload
+// 	// Verify state
+// 	cookie, err := r.Cookie("oauthstate")
+// 	if err != nil || r.URL.Query().Get("state") != cookie.Value {
+// 		http.Error(w, "Invalid OAuth state", http.StatusUnauthorized)
+// 		return
+// 	}
+
+// 	code := r.URL.Query().Get("code")
+// 	token, err := googleOauthConfig.Exchange(r.Context(), code)
+// 	if err != nil {
+// 		http.Error(w, "Code exchange failed", http.StatusUnauthorized)
+// 		return
+// 	}
+
+// 	client := googleOauthConfig.Client(r.Context(), token)
+// 	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
+// 	if err != nil {
+// 		http.Error(w, "Failed to get user info", http.StatusUnauthorized)
+// 		return
+// 	}
+// 	defer resp.Body.Close()
+
+// 	err = ReadJSON(w, r, &payload)
+// 	if err != nil {
+// 		app.badRequestResponse(w, r, err)
+// 		return
+// 	}
+
+// 	// Insert or update user in the database
+// 	user, err := app.store.Users.GauthCreate(r.Context(), payload.Email, payload.Username)
+// 	if err != nil {
+// 		app.internalServerError(w, r, err)
+// 		return
+// 	}
+
+// 	claims := jwt.MapClaims{
+// 		"sub": user.ID,
+// 		"exp": time.Now().Add(app.config.auth.token.exp).Unix(),
+// 		"iat": time.Now().Unix(),
+// 		"nbf": time.Now().Unix(),
+// 		"iss": app.config.auth.token.iss,
+// 		"aud": app.config.auth.token.iss,
+// 	}
+
+// 	tokens, err := app.authenticator.GenerateToken(claims)
+// 	if err != nil {
+// 		app.internalServerError(w, r, err)
+// 		return
+// 	}
+
+// 	if err := JsonResponse(w, http.StatusCreated, tokens); err != nil {
+// 		app.internalServerError(w, r, err)
+// 	}
+// }

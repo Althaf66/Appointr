@@ -50,6 +50,22 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	return nil
 }
 
+// func (s *UserStore) GauthCreate(ctx context.Context, email string, username string) (*User, error) {
+// 	query := `INSERT INTO users (email, username, is_active) VALUES ($1, $2, TRUE) ON 
+// 	CONFLICT (email) DO UPDATE SET username = EXCLUDED.username RETURNING id, created_at`
+
+// 	ctx, cancel := context.WithTimeout(ctx, QueryTimeOutDuration)
+// 	defer cancel()
+
+// 	user := &User{}
+// 	err := s.db.QueryRowContext(ctx, query, email, username).Scan(&user.ID, &user.CreatedAt)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return user, nil
+// }
+
 func (s *UserStore) GetByID(ctx context.Context, id int64) (*User, error) {
 	query := `SELECT id, username, email, password, created_at
 	FROM users WHERE id = $1 AND is_active = true`
