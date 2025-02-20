@@ -9,12 +9,12 @@ import (
 )
 
 type RegisterDisciplinePayload struct {
-	Field     string `json:"field" `
+	Field    string `json:"field" `
 	Subfield string `json:"subfield"`
 }
 
 type UpdateDisciplinePayload struct {
-	Field     *string `json:"field" `
+	Field    *string `json:"field" `
 	Subfield *string `json:"subfield"`
 }
 
@@ -39,7 +39,7 @@ func (app *application) createDisciplineHandler(w http.ResponseWriter, r *http.R
 	}
 
 	discipline := &store.Discipline{
-		Field:     payload.Field,
+		Field:    payload.Field,
 		SubField: payload.Subfield,
 	}
 
@@ -57,7 +57,7 @@ func (app *application) createDisciplineHandler(w http.ResponseWriter, r *http.R
 	}
 }
 
-//  getDisciplineHandlerByField godoc
+//	 getDisciplineHandlerByField godoc
 //
 //	@Summary		Fetches discipline
 //	@Description	Fetches discipline by Field
@@ -167,7 +167,7 @@ func (app *application) updateDisciplineHandler(w http.ResponseWriter, r *http.R
 			return
 		}
 	}
-	
+
 	if payload.Field != nil {
 		discipline.Field = *payload.Field
 	}

@@ -51,7 +51,7 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 }
 
 // func (s *UserStore) GauthCreate(ctx context.Context, email string, username string) (*User, error) {
-// 	query := `INSERT INTO users (email, username, is_active) VALUES ($1, $2, TRUE) ON 
+// 	query := `INSERT INTO users (email, username, is_active) VALUES ($1, $2, TRUE) ON
 // 	CONFLICT (email) DO UPDATE SET username = EXCLUDED.username RETURNING id, created_at`
 
 // 	ctx, cancel := context.WithTimeout(ctx, QueryTimeOutDuration)

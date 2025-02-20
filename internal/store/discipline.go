@@ -142,5 +142,3 @@ func (s *DisciplineStore) GetByID(ctx context.Context, id int64) (*Discipline, e
 	}
 	return &dis, nil
 }
-
-// complete discipline api and its interface

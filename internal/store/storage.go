@@ -35,8 +35,8 @@ type Storage struct {
 
 func NewPostgresStorage(db *sql.DB) Storage {
 	return Storage{
-		Users: &UserStore{db},
-		Expertise: &ExpertiseStore{db},
+		Users:      &UserStore{db},
+		Expertise:  &ExpertiseStore{db},
 		Discipline: &DisciplineStore{db},
 	}
 }

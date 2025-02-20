@@ -171,7 +171,7 @@ func (app *application) updateExpertiseHandler(w http.ResponseWriter, r *http.Re
 			return
 		}
 	}
-	
+
 	if payload.Name != nil {
 		expertise.Name = *payload.Name
 	}
@@ -193,7 +193,7 @@ func (app *application) updateExpertiseHandler(w http.ResponseWriter, r *http.Re
 // getExpertiseHandler godoc
 //
 //	@Summary		Fetches all expertise
-//	@Description	Fetches all expertise 
+//	@Description	Fetches all expertise
 //	@Tags			expertise
 //	@Accept			json
 //	@Produce		json

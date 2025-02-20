@@ -106,7 +106,7 @@ func (s *ExpertiseStore) GetByID(ctx context.Context, id int64) (*Expertise, err
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeOutDuration)
 	defer cancel()
-	
+
 	var exp Expertise
 	err := s.db.QueryRowContext(ctx, query, id).Scan(&exp.ID, &exp.Name, &exp.Icon_svg)
 
@@ -120,5 +120,3 @@ func (s *ExpertiseStore) GetByID(ctx context.Context, id int64) (*Expertise, err
 	}
 	return &exp, nil
 }
-
-// complete expertise api and its interface
