@@ -8,6 +8,9 @@ import { ThemeProvider } from './context/ThemeContext';
 import { ExplorePage } from './pages/ExplorePage';
 import { MentorProfilePage } from './pages/MentorProfilePage';
 import { MessagesPage } from './pages/MessagesPage';
+import { ConfirmationPage } from './pages/ConfirmationPage';
+
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/v1"
 
 function App() {
   return (
@@ -21,6 +24,7 @@ function App() {
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/mentor/:id" element={<MentorProfilePage />} />
           <Route path="/messages" element={<MessagesPage />} />
+          <Route path="/confirm/:token" element={<ConfirmationPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>

@@ -130,6 +130,16 @@ func (app *application) mount() *chi.Mux {
 			r.Post("/user", app.registerUserHandler)
 			r.Post("/token", app.createTokenHandler)
 		})
+		r.Route("/messages", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Post("/conversations",app.createConversationHandler)
+			r.Post("/conversations/{id}/messages", app.createMessageHandler)
+			r.Get("/conversations", app.getConversationsHandler)
+			r.Get("/conversations/{conversationID}", app.getConversationHandler)
+			r.Get("/{conversationID}", app.getMessagesHandler)
+			r.Put("/{conversationID}/read", app.markConversationReadHandler)
+			r.Get("/unread", app.getUnreadCountHandler)
+		})
 	})
 
 	return r

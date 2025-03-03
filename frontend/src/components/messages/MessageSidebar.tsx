@@ -1,10 +1,11 @@
+// components/messages/MessageSidebar.tsx
 import React from 'react';
 import { Search, Edit } from 'lucide-react';
 import { MessagePreview } from './MessagePreview';
 import { useMessages } from '../../hooks/useMessages';
 
 export const MessageSidebar = () => {
-  const { conversations } = useMessages();
+  const { conversations, setActiveThread } = useMessages();
 
   return (
     <div className="w-96 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -28,7 +29,16 @@ export const MessageSidebar = () => {
 
       <div className="overflow-y-auto h-[calc(100vh-180px)]">
         {conversations.map((conversation) => (
-          <MessagePreview key={conversation.id} conversation={conversation} />
+          <div
+            key={conversation.id}
+            onClick={() => {
+              console.log('Selecting conversation:', conversation.id);
+              setActiveThread(conversation.id);
+            }}
+            className="cursor-pointer"
+          >
+            <MessagePreview conversation={conversation} />
+          </div>
         ))}
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Send, Paperclip, Image, Smile } from 'lucide-react';
 import { MessageBubble } from './MessageBubble';
 import { ThreadHeader } from './ThreadHeader';
@@ -6,12 +6,24 @@ import { useMessages } from '../../hooks/useMessages';
 
 export const MessageThread = () => {
   const [message, setMessage] = useState('');
-  const { activeThread } = useMessages();
+  const { activeThread, sendMessage, setActiveThread, conversations } = useMessages();
 
-  const handleSend = () => {
-    if (message.trim()) {
-      // Handle sending message
-      setMessage('');
+  useEffect(() => {
+    // Set the first conversation as the active thread if none is set
+    if (!activeThread && conversations.length > 0) {
+      setActiveThread(conversations[0].id);
+    }
+  }, [activeThread, conversations, setActiveThread]);
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (message.trim() && activeThread) {
+      try {
+        await sendMessage(activeThread.id, message);
+        setMessage('');
+      } catch (error) {
+        console.error('Failed to send message:', error);
+      }
     }
   };
 
@@ -40,12 +52,12 @@ export const MessageThread = () => {
         ))}
       </div>
       
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+      <form onSubmit={handleSend} className="p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
-          <button className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+          <button type="button" className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
             <Image size={20} />
           </button>
-          <button className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+          <button type="button" className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
             <Paperclip size={20} />
           </button>
           
@@ -55,21 +67,20 @@ export const MessageThread = () => {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type a message..."
             className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
           />
           
-          <button className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+          <button type="button" className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
             <Smile size={20} />
           </button>
           <button
-            onClick={handleSend}
+            type="submit"
             disabled={!message.trim()}
             className="p-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 disabled:opacity-50"
           >
             <Send size={20} />
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

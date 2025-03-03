@@ -31,6 +31,16 @@ type Storage struct {
 		GetByID(context.Context, int64) (*Discipline, error)
 		GetByField(context.Context, string) (*Discipline, error)
 	}
+	Messages interface {
+		CreateConversation(ctx context.Context, userID1, userID2 int64) (*Conversation, error)
+		GetConversation(ctx context.Context, conversationID int64) (*Conversation, error)
+		GetOrCreateConversationByUsers(ctx context.Context, userID1, userID2 int64) (*Conversation, error)
+		GetUserConversations(ctx context.Context, userID int64) ([]*Conversation, error)
+		CreateMessage(ctx context.Context, message *Message) error
+		GetConversationMessages(ctx context.Context, conversationID int64, limit, offset int) ([]*Message, error)
+		MarkConversationAsRead(ctx context.Context, conversationID, userID int64) error
+		GetUnreadCount(ctx context.Context, userID int64) (int, error)
+	}
 }
 
 func NewPostgresStorage(db *sql.DB) Storage {
@@ -38,6 +48,7 @@ func NewPostgresStorage(db *sql.DB) Storage {
 		Users:      &UserStore{db},
 		Expertise:  &ExpertiseStore{db},
 		Discipline: &DisciplineStore{db},
+		Messages:   &MessageStore{db},
 	}
 }
 

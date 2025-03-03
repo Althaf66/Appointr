@@ -1,14 +1,49 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { AuthLayout } from './AuthLayout';
+import { useNavigate } from 'react-router-dom'; // Add this import
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(''); // Add error state
+  const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const navigate = useNavigate(); // Add navigation hook
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('http://localhost:8080/v1/authentication/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const token = await response.json();
+      
+      // Store the token in localStorage
+      localStorage.setItem('authToken', token);
+
+      // Redirect to dashboard or home page after successful login
+      navigate('/explore');
+    } catch (err) {
+      setError('Invalid email or password');
+      console.error('Login error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -17,6 +52,12 @@ export const LoginPage = () => {
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Welcome back</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-8">Please enter your details to sign in</p>
         
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -32,6 +73,7 @@ export const LoginPage = () => {
                 className="w-full pl-10 pr-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your email"
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -50,32 +92,40 @@ export const LoginPage = () => {
                 className="w-full pl-10 pr-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your password"
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
 
           <div className="flex items-center justify-between">
-            <label className="flex items-center">
-              <input type="checkbox" className="rounded text-blue-600 focus:ring-blue-500" />
-              <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Remember me</span>
-            </label>
-            <button type="button" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+            <button 
+              type="button" 
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              disabled={isLoading}
+            >
               Forgot password?
             </button>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 disabled:bg-blue-400"
+            disabled={isLoading}
           >
-            Sign in
-            <ArrowRight size={18} />
+            {isLoading ? 'Signing in...' : 'Sign in'}
+            {!isLoading && <ArrowRight size={18} />}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
           Don't have an account?{' '}
-          <button className="text-blue-600 dark:text-blue-400 hover:underline">Sign up</button>
+          <button 
+            className="text-blue-600 dark:text-blue-400 hover:underline"
+            onClick={() => navigate('/signup')}
+            disabled={isLoading}
+          >
+            Sign up
+          </button>
         </p>
       </div>
     </AuthLayout>

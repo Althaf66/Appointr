@@ -1,5 +1,15 @@
 basePath: /v1
 definitions:
+  main.CreateConversationRequest:
+    properties:
+      other_user_id:
+        type: integer
+    type: object
+  main.CreateMessageRequest:
+    properties:
+      content:
+        type: string
+    type: object
   main.CreateUserTokenPayload:
     properties:
       email:
@@ -73,6 +83,29 @@ definitions:
       username:
         type: string
     type: object
+  store.Conversation:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      last_message:
+        $ref: '#/definitions/store.Message'
+      other_user:
+        allOf:
+        - $ref: '#/definitions/store.User'
+        description: The user that is not the current user
+      participants:
+        description: Derived fields (not stored directly in conversations table)
+        items:
+          $ref: '#/definitions/store.User'
+        type: array
+      unread:
+        description: Number of unread messages
+        type: integer
+      updated_at:
+        type: string
+    type: object
   store.Discipline:
     properties:
       field:
@@ -90,6 +123,25 @@ definitions:
         type: integer
       name:
         type: string
+    type: object
+  store.Message:
+    properties:
+      content:
+        type: string
+      conversation_id:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_read:
+        type: boolean
+      sender:
+        allOf:
+        - $ref: '#/definitions/store.User'
+        description: Derived fields
+      sender_id:
+        type: integer
     type: object
   store.User:
     properties:
@@ -499,6 +551,214 @@ paths:
       summary: Healthcheck
       tags:
       - health
+  /messages/{conversationID}:
+    get:
+      consumes:
+      - application/json
+      description: Get messages in a conversation with pagination
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: conversationID
+        required: true
+        type: integer
+      - default: 50
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.Message'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get conversation messages
+      tags:
+      - messages
+  /messages/{conversationID}/read:
+    put:
+      consumes:
+      - application/json
+      description: Mark all messages in a conversation as read for a user
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: conversationID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Conversation marked as read
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Mark conversation as read
+      tags:
+      - messages
+  /messages/conversations:
+    get:
+      consumes:
+      - application/json
+      description: Get all conversations for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.Conversation'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get user conversations
+      tags:
+      - messages
+    post:
+      consumes:
+      - application/json
+      description: Creates a new conversation with another user
+      parameters:
+      - description: Create conversation request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateConversationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Conversation created
+          schema:
+            $ref: '#/definitions/store.Conversation'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Create conversation
+      tags:
+      - messages
+  /messages/conversations/{conversationID}:
+    get:
+      consumes:
+      - application/json
+      description: Get a conversation by ID
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: conversationID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Conversation'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get specific conversation
+      tags:
+      - messages
+  /messages/conversations/{id}/messages:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new message in a conversation
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: message
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Conversation created
+          schema:
+            $ref: '#/definitions/store.Message'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Create message
+      tags:
+      - messages
+  /messages/unread:
+    get:
+      consumes:
+      - application/json
+      description: Get total number of unread messages for the user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: "count\":\tint"
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get unread message count
+      tags:
+      - messages
   /users/{id}:
     get:
       consumes:
