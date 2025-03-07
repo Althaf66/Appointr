@@ -32,9 +32,11 @@ export const LoginPage = () => {
       }
 
       const token = await response.json();
+      var authToken = token.data
+      // console.log(token.data)
       
       // Store the token in localStorage
-      localStorage.setItem('authToken', token);
+      localStorage.setItem('token', authToken);
 
       // Redirect to dashboard or home page after successful login
       navigate('/explore');

@@ -11,7 +11,6 @@ import { engineeringMentors } from '../data/engineeringMentors';
 export const ExplorePage = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      <StickyHeader />
       <Navbar />
       <DomainTabs />
       <ExploreHeader />

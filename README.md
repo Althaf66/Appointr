@@ -10,3 +10,11 @@ cd frontend
 npm i
 npm run dev
 ```
+
+## To push to the github repo
+```
+git status
+git add .
+git commit --signoff -m "update"
+git push origin main
+```

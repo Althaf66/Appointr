@@ -7,7 +7,7 @@ import { SignupPage } from './pages/auth/SignupPage';
 import { ThemeProvider } from './context/ThemeContext';
 import { ExplorePage } from './pages/ExplorePage';
 import { MentorProfilePage } from './pages/MentorProfilePage';
-import { MessagesPage } from './pages/MessagesPage';
+import  MessagesPage  from './pages/MessagesPage';
 import { ConfirmationPage } from './pages/ConfirmationPage';
 
 export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/v1"

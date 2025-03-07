@@ -1,5 +1,12 @@
 import React from 'react';
+import { Navigate } from 'react-router-dom';
 import { Search, Bell, User, MessageCircle, UserPlus } from 'lucide-react';
+import { ThemeToggle } from '../ThemeToggle';
+
+function Logout() {
+  localStorage.clear()
+  return <Navigate to="/login" />
+}
 
 export const MentorHeader = () => {
   return (
@@ -21,11 +28,18 @@ export const MentorHeader = () => {
           </div>
 
           <div className="flex items-center space-x-4">
+          <ThemeToggle />
             <button className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
               <Bell size={20} />
             </button>
             <button className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
               <User size={20} />
+            </button>
+            <button
+              onClick={Logout}
+              className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+            >
+              Logout
             </button>
           </div>
         </div>
