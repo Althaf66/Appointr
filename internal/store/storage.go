@@ -41,6 +41,25 @@ type Storage struct {
 		MarkConversationAsRead(ctx context.Context, conversationID, userID int64) error
 		GetUnreadCount(ctx context.Context, userID int64) (int, error)
 	}
+	Mentor interface {
+		CreateMentor(ctx context.Context, mentor *Mentor) error
+		GetAllMentors(ctx context.Context, limit, offset int) ([]*Mentor, error)
+		GetMentorByName(ctx context.Context, name string) ([]*Mentor, error)
+		GetMentorByID(ctx context.Context, id int64) (*Mentor, error)
+		UpdateMentor(ctx context.Context, mentor *Mentor) error
+		DeleteMentor(ctx context.Context, mentorID int64) error
+		// GetMentorsByExpertise(ctx context.Context, expertise string) ([]*Mentor, error)
+		// GetMentorsByDiscipline(ctx context.Context, discipline string) ([]*Mentor, error)
+	}
+	Gig interface {
+		CreateGig(ctx context.Context, gig *Gig) error
+		GetAllGigs(ctx context.Context, limit, offset int) ([]*Gig, error)
+		GetGigsByExpertise(ctx context.Context, expertise string) ([]*Gig, error)
+		UpdateGig(ctx context.Context, gig *Gig) error
+		DeleteGig(ctx context.Context, gigID int64) error
+		GetGigByID(ctx context.Context, id int64) (*Gig, error)
+		// GetGigByMentorID(ctx context.Context, mentorID int64) ([]*Gig, error)
+	}
 }
 
 func NewPostgresStorage(db *sql.DB) Storage {
@@ -49,6 +68,8 @@ func NewPostgresStorage(db *sql.DB) Storage {
 		Expertise:  &ExpertiseStore{db},
 		Discipline: &DisciplineStore{db},
 		Messages:   &MessageStore{db},
+		Mentor:     &MentorStore{db},
+		Gig:        &GigStore{db},
 	}
 }
 

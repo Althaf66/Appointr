@@ -12,6 +12,7 @@ import (
 var ErrConversationNotFound = errors.New("conversation not found")
 
 // GetConversations godoc
+//
 //	@Summary		Get user conversations
 //	@Description	Get all conversations for the authenticated user
 //	@Tags			messages
@@ -40,6 +41,7 @@ func (app *application) getConversationsHandler(w http.ResponseWriter, r *http.R
 }
 
 // GetConversation godoc
+//
 //	@Summary		Get specific conversation
 //	@Description	Get a conversation by ID
 //	@Tags			messages
@@ -77,7 +79,6 @@ func (app *application) getConversationHandler(w http.ResponseWriter, r *http.Re
 type CreateMessageRequest struct {
 	Content string `json:"content"`
 }
-
 
 // CreateMessageHandler godoc
 //
@@ -140,6 +141,7 @@ func (app *application) createMessageHandler(w http.ResponseWriter, r *http.Requ
 }
 
 // GetMessages godoc
+//
 //	@Summary		Get conversation messages
 //	@Description	Get messages in a conversation with pagination
 //	@Tags			messages
@@ -181,6 +183,7 @@ func (app *application) getMessagesHandler(w http.ResponseWriter, r *http.Reques
 }
 
 // MarkConversationRead godoc
+//
 //	@Summary		Mark conversation as read
 //	@Description	Mark all messages in a conversation as read for a user
 //	@Tags			messages
@@ -201,7 +204,7 @@ func (app *application) markConversationReadHandler(w http.ResponseWriter, r *ht
 
 	user := getUserfromCtx(r)
 	if user == nil {
-		app.unauthorizedErrorResponse(w,r,ErrConversationNotFound)
+		app.unauthorizedErrorResponse(w, r, ErrConversationNotFound)
 		return
 	}
 
@@ -217,6 +220,7 @@ func (app *application) markConversationReadHandler(w http.ResponseWriter, r *ht
 }
 
 // GetUnreadCount godoc
+//
 //	@Summary		Get unread message count
 //	@Description	Get total number of unread messages for the user
 //	@Tags			messages
@@ -292,7 +296,7 @@ func (app *application) createConversationHandler(w http.ResponseWriter, r *http
 	otherUser, err := app.store.Users.GetByID(r.Context(), req.OtherUserID)
 	if err != nil {
 		if errors.Is(err, store.ErrUserNotFound) {
-			app.notFoundResponse(w, r,err)
+			app.notFoundResponse(w, r, err)
 			return
 		}
 		app.badRequestResponse(w, r, errors.New("cannot create conversation with yourself"))

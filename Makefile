@@ -1,4 +1,5 @@
 MIGRATIONS_PATH = ./cmd/migrate/migrations
+DB_ADDR = 'postgres://admin:adminpassword@localhost/appointr?sslmode=disable
 
 .PHONY: migrate-create
 migration:

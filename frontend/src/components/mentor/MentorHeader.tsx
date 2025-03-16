@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { Search, Bell, User, MessageCircle, UserPlus } from 'lucide-react';
+import { Search, Bell, User, MessageCircle, UserPlus, MessageSquare } from 'lucide-react';
 import { ThemeToggle } from '../ThemeToggle';
 
 function Logout() {
@@ -31,6 +31,12 @@ export const MentorHeader = () => {
           <ThemeToggle />
             <button className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
               <Bell size={20} />
+            </button>
+            <button
+              onClick={() => window.location.href = '/messages'}
+              className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+            >
+              <MessageSquare size={20} />
             </button>
             <button className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
               <User size={20} />

@@ -37,6 +37,41 @@ definitions:
       name:
         type: string
     type: object
+  main.RegisterGigPayload:
+    properties:
+      description:
+        type: string
+      discipline:
+        items:
+          type: string
+        type: array
+      expertise:
+        type: string
+      title:
+        maxLength: 100
+        type: string
+    required:
+    - description
+    - discipline
+    - expertise
+    - title
+    type: object
+  main.RegisterMentorPayload:
+    properties:
+      country:
+        type: string
+      language:
+        items:
+          type: string
+        type: array
+      name:
+        maxLength: 40
+        type: string
+    required:
+    - country
+    - language
+    - name
+    type: object
   main.RegisterUserPayload:
     properties:
       email:
@@ -66,6 +101,31 @@ definitions:
       icon_svg:
         type: string
       name:
+        type: string
+    type: object
+  main.UpdateGigPayload:
+    properties:
+      description:
+        type: string
+      discipline:
+        items:
+          type: string
+        type: array
+      expertise:
+        type: string
+      title:
+        type: string
+    type: object
+  main.UpdateMentorPayload:
+    properties:
+      country:
+        type: string
+      language:
+        items:
+          type: string
+        type: array
+      name:
+        maxLength: 40
         type: string
     type: object
   main.UserWithToken:
@@ -115,6 +175,36 @@ definitions:
       subfield:
         type: string
     type: object
+  store.Education:
+    properties:
+      degree:
+        type: string
+      field:
+        type: string
+      institute:
+        type: string
+      userid:
+        type: integer
+      year_from:
+        type: string
+      year_to:
+        type: string
+    type: object
+  store.Experience:
+    properties:
+      company:
+        type: string
+      description:
+        type: string
+      title:
+        type: string
+      userid:
+        type: integer
+      year_from:
+        type: string
+      year_to:
+        type: string
+    type: object
   store.Expertise:
     properties:
       icon_svg:
@@ -123,6 +213,66 @@ definitions:
         type: integer
       name:
         type: string
+    type: object
+  store.Gig:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      discipline:
+        items:
+          type: string
+        type: array
+      expertise:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+      userid:
+        type: integer
+    type: object
+  store.Mentor:
+    properties:
+      country:
+        type: string
+      created_at:
+        type: string
+      education:
+        items:
+          $ref: '#/definitions/store.Education'
+        type: array
+      experience:
+        items:
+          $ref: '#/definitions/store.Experience'
+        type: array
+      gigs:
+        items:
+          $ref: '#/definitions/store.Gig'
+        type: array
+      id:
+        type: integer
+      language:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      social_media:
+        items:
+          $ref: '#/definitions/store.SocialMedia'
+        type: array
+      updated_at:
+        type: string
+      userid:
+        type: integer
+      working_at:
+        $ref: '#/definitions/store.WorkingAt'
+      years_of_experience:
+        $ref: '#/definitions/store.YearsOfExperience'
     type: object
   store.Message:
     properties:
@@ -143,6 +293,15 @@ definitions:
       sender_id:
         type: integer
     type: object
+  store.SocialMedia:
+    properties:
+      link:
+        type: string
+      name:
+        type: string
+      userid:
+        type: integer
+    type: object
   store.User:
     properties:
       created_at:
@@ -155,6 +314,24 @@ definitions:
         type: boolean
       username:
         type: string
+    type: object
+  store.WorkingAt:
+    properties:
+      company:
+        type: string
+      title:
+        type: string
+      userid:
+        type: integer
+    type: object
+  store.YearsOfExperience:
+    properties:
+      month:
+        type: integer
+      userid:
+        type: integer
+      year:
+        type: integer
     type: object
 host: localhost:8080
 info:
@@ -538,6 +715,205 @@ paths:
       summary: Creates a new expertise
       tags:
       - expertise
+  /gigs:
+    get:
+      consumes:
+      - application/json
+      description: Get all gigs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.Gig'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get all gigs
+      tags:
+      - gig
+  /gigs/{gigID}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete gig
+      parameters:
+      - description: Gig ID
+        in: path
+        name: gigID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Delete gig
+      tags:
+      - gig
+    get:
+      consumes:
+      - application/json
+      description: Get gig by ID
+      parameters:
+      - description: Gig ID
+        in: path
+        name: gigID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Gig'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get gig by ID
+      tags:
+      - gig
+    patch:
+      consumes:
+      - application/json
+      description: Update gig
+      parameters:
+      - description: Gig ID
+        in: path
+        name: gigID
+        required: true
+        type: integer
+      - description: Gig payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.UpdateGigPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Gig'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update gig
+      tags:
+      - gig
+  /gigs/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a gig
+      parameters:
+      - description: Gig payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.RegisterGigPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/store.Gig'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Creates a gig
+      tags:
+      - gig
+  /gigs/expertise/{expertise}:
+    get:
+      consumes:
+      - application/json
+      description: Get gigs by expertise
+      parameters:
+      - description: Expertise
+        in: path
+        name: expertise
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.Gig'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get gigs by expertise
+      tags:
+      - gig
   /health:
     get:
       description: Healthcheck endpoint
@@ -551,6 +927,208 @@ paths:
       summary: Healthcheck
       tags:
       - health
+  /mentors:
+    get:
+      consumes:
+      - application/json
+      description: Get all mentors
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.Mentor'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get all mentors
+      tags:
+      - mentor
+  /mentors/{mentorID}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete mentor
+      parameters:
+      - description: Mentor ID
+        in: path
+        name: mentorID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Delete mentor
+      tags:
+      - mentor
+    get:
+      consumes:
+      - application/json
+      description: Get mentor by ID
+      parameters:
+      - description: Mentor ID
+        in: path
+        name: mentorID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Mentor'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get mentor by ID
+      tags:
+      - mentor
+    patch:
+      consumes:
+      - application/json
+      description: Update mentor
+      parameters:
+      - description: Mentor ID
+        in: path
+        name: mentorID
+        required: true
+        type: integer
+      - description: Mentor payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.UpdateMentorPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Mentor'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update mentor
+      tags:
+      - mentor
+  /mentors/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a mentor
+      parameters:
+      - description: Mentor payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.RegisterMentorPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/store.Mentor'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Creates a mentor
+      tags:
+      - mentor
+  /mentors/name/{mentorName}:
+    get:
+      consumes:
+      - application/json
+      description: Get mentor by name
+      parameters:
+      - description: Mentor Name
+        in: path
+        name: mentorName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.Mentor'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get mentor by name
+      tags:
+      - mentor
   /messages/{conversationID}:
     get:
       consumes:

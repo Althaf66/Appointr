@@ -11,6 +11,7 @@ import (
 	"github.com/Althaf66/Appointr/internal/env"
 	"github.com/Althaf66/Appointr/internal/mailer"
 	"github.com/Althaf66/Appointr/internal/store"
+	"github.com/Althaf66/Appointr/internal/websocket"
 	"go.uber.org/zap"
 )
 
@@ -80,6 +81,7 @@ func main() {
 	logger.Info("database connection pool established")
 
 	store := store.NewPostgresStorage(db)
+	wsManager := websocket.NewWebSocketManager(store)
 
 	mailtrap, err := mailer.NewMailTrapClient(cfg.mail.mailTrap.apiKey, cfg.mail.fromEmail)
 	if err != nil {
@@ -93,6 +95,7 @@ func main() {
 		logger:        logger,
 		mailer:        mailtrap,
 		authenticator: jwtAuthenticator,
+		wsManager:     wsManager,
 	}
 
 	expvar.NewString("version").Set(version)

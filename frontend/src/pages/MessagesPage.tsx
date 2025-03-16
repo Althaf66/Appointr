@@ -11,6 +11,7 @@ const MessagesPage: React.FC = () => {
   const [newMessage, setNewMessage] = useState("");
   const userId = token ? getUseridFromJWT(token) : 0;
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     if (token) {
@@ -21,6 +22,23 @@ const MessagesPage: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    if (selectedConversation) {
+      ws.current = new WebSocket(`ws://localhost:8080/ws/messages/${selectedConversation}?token=${token}`);
+      ws.current.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        console.log("WebSocket :", message);
+        setMessages((prevMessages) => [...prevMessages, message]);
+      };
+      ws.current.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+      return () => {
+        ws.current?.close();
+      };
+    }
+  }, [selectedConversation]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -44,7 +62,6 @@ const MessagesPage: React.FC = () => {
       const res = await axios.get(`${API_URL}/messages/${conversationID}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // Sort messages chronologically (oldest to newest)
       const sortedMessages = Array.isArray(res.data.data) 
         ? [...res.data.data].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
         : [];
@@ -76,8 +93,8 @@ const MessagesPage: React.FC = () => {
         { content: newMessage },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setNewMessage("");
-      fetchMessages(selectedConversation);
+      ws.current?.send(JSON.stringify({ content: newMessage, senderId: userId}));
+      setNewMessage('');
     } catch (error) {
       console.error("Error sending message", error);
     }
@@ -116,7 +133,6 @@ const MessagesPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <MentorHeader />
       <div className="flex h-screen">
-        {/* Left sidebar - Conversations list */}
         <div className="w-1/3 border-r border-gray-800 flex flex-col">
           <div className="p-4 border-b border-gray-800">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Messages</h1>
@@ -156,18 +172,15 @@ const MessagesPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right side - Messages */}
         <div className="w-2/3 flex flex-col">
           {selectedConversation ? (
             <>
-              {/* Chat header */}
               <div className="flex items-center p-4 border-b border-gray-800">
                 <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-blue-600 rounded-full text-white font-bold">
                   {getInitials(getConversationPartner(conversations.find(conv => conv.id === selectedConversation)))}
                 </div>
                 <div className="ml-3">
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{getConversationPartner(conversations.find(conv => conv.id === selectedConversation))}</p>
-                  
                 </div>
                 <div className="ml-auto flex space-x-3">
                   <button className="text-gray-400 hover:text-white">
@@ -188,7 +201,6 @@ const MessagesPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Messages - WhatsApp style (oldest at top, newest at bottom) */}
               <div className="flex-1 p-4 overflow-y-auto bg-gray-900 flex flex-col">
                 {messages.length > 0 ? (
                   <div className="flex-1 flex flex-col justify-end">
@@ -219,7 +231,6 @@ const MessagesPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Message input */}
               <div className="p-4 border-t border-gray-800 flex items-center space-x-2">
                 <button className="text-gray-400 hover:text-white">
                   <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

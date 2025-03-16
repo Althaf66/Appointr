@@ -57,20 +57,20 @@ func (app *application) createDisciplineHandler(w http.ResponseWriter, r *http.R
 	}
 }
 
-//	 getDisciplineHandlerByField godoc
+// getDisciplineHandlerByField godoc
 //
-//	@Summary		Fetches discipline
-//	@Description	Fetches discipline by Field
-//	@Tags			discipline
-//	@Accept			json
-//	@Produce		json
-//	@Param			string	path		string	true	"Discipline Field"
-//	@Success		200		{object}	store.Discipline
-//	@Failure		400		{object}	error
-//	@Failure		404		{object}	error
-//	@Failure		500		{object}	error
-//	@Security		ApiKeyAuth
-//	@Router			/discipline/{string} [get]
+// @Summary		Fetches discipline
+// @Description	Fetches discipline by Field
+// @Tags			discipline
+// @Accept			json
+// @Produce		json
+// @Param			string	path		string	true	"Discipline Field"
+// @Success		200		{object}	store.Discipline
+// @Failure		400		{object}	error
+// @Failure		404		{object}	error
+// @Failure		500		{object}	error
+// @Security		ApiKeyAuth
+// @Router			/discipline/{string} [get]
 func (app *application) getDisciplineHandlerByField(w http.ResponseWriter, r *http.Request) {
 	disciplinefield := chi.URLParam(r, "disciplineField")
 

@@ -12,10 +12,10 @@ type Conversation struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	// Derived fields (not stored directly in conversations table)
-	Participants []*User     `json:"participants,omitempty"`
-	LastMessage  *Message    `json:"last_message,omitempty"`
-	OtherUser    *User       `json:"other_user,omitempty"` // The user that is not the current user
-	Unread       int         `json:"unread"`              // Number of unread messages
+	Participants []*User  `json:"participants,omitempty"`
+	LastMessage  *Message `json:"last_message,omitempty"`
+	OtherUser    *User    `json:"other_user,omitempty"` // The user that is not the current user
+	Unread       int      `json:"unread"`               // Number of unread messages
 }
 
 // ConversationParticipant joins users to conversations
@@ -202,7 +202,7 @@ func (s *MessageStore) GetUserConversations(ctx context.Context, userID int64) (
 			LastMessage: &Message{},
 			OtherUser:   &User{},
 		}
-		
+
 		err := rows.Scan(
 			&conv.ID, &conv.CreatedAt, &conv.UpdatedAt, &conv.Unread,
 			&conv.LastMessage.ID, &conv.LastMessage.SenderID, &conv.LastMessage.Content, &conv.LastMessage.CreatedAt, &conv.LastMessage.IsRead,
@@ -211,7 +211,7 @@ func (s *MessageStore) GetUserConversations(ctx context.Context, userID int64) (
 		if err != nil {
 			return nil, err
 		}
-		
+
 		// Handle nullable message fields
 		// if msgID.Valid {
 		// 	conv.LastMessage.ID = msgID.Int64
@@ -221,7 +221,7 @@ func (s *MessageStore) GetUserConversations(ctx context.Context, userID int64) (
 		// } else {
 		// 	conv.LastMessage = nil
 		// }
-		
+
 		conversations = append(conversations, conv)
 	}
 
@@ -284,7 +284,7 @@ func (s *MessageStore) GetConversationMessages(ctx context.Context, conversation
 			ConversationID: conversationID,
 			Sender:         &User{},
 		}
-		
+
 		err := rows.Scan(
 			&msg.ID, &msg.SenderID, &msg.Content, &msg.CreatedAt, &msg.IsRead,
 			&msg.Sender.ID, &msg.Sender.Username, &msg.Sender.Email, &msg.Sender.CreatedAt,
@@ -292,7 +292,7 @@ func (s *MessageStore) GetConversationMessages(ctx context.Context, conversation
 		if err != nil {
 			return nil, err
 		}
-		
+
 		messages = append(messages, msg)
 	}
 
@@ -309,7 +309,7 @@ func (s *MessageStore) MarkConversationAsRead(ctx context.Context, conversationI
 		SET is_read = true
 		WHERE conversation_id = $1 AND sender_id != $2 AND is_read = false
 	`, conversationID, userID)
-	
+
 	return err
 }
 
@@ -325,6 +325,6 @@ func (s *MessageStore) GetUnreadCount(ctx context.Context, userID int64) (int, e
 		JOIN conversation_participants cp ON m.conversation_id = cp.conversation_id
 		WHERE cp.user_id = $1 AND m.sender_id != $1 AND m.is_read = false
 	`, userID).Scan(&count)
-	
+
 	return count, err
 }

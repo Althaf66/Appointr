@@ -16,6 +16,7 @@ import (
 	"github.com/Althaf66/Appointr/internal/env"
 	"github.com/Althaf66/Appointr/internal/mailer"
 	"github.com/Althaf66/Appointr/internal/store"
+	"github.com/Althaf66/Appointr/internal/websocket"
 	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -29,6 +30,7 @@ type application struct {
 	logger        *zap.SugaredLogger
 	mailer        mailer.Client
 	authenticator auth.Authenticator
+	wsManager     *websocket.WebSocketManager
 }
 
 type config struct {
@@ -89,8 +91,12 @@ func (app *application) mount() *chi.Mux {
 		AllowCredentials: false,
 		MaxAge:           300,
 	}))
-
 	r.Use(middleware.Timeout(60 * time.Second))
+
+	r.Route("/ws", func(r chi.Router) {
+		r.Use(app.AuthTokenMiddleware) // Ensure authenticated access
+		r.Get("/messages/{conversationID}", app.HandleWebSocket(app.wsManager))
+	})
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/health", app.healthcheckHandler)
@@ -111,8 +117,10 @@ func (app *application) mount() *chi.Mux {
 			r.Get("/", app.getDisciplineHandler)
 			r.Post("/create", app.createDisciplineHandler)
 			r.Get("/{disciplineField}", app.getDisciplineHandlerByField)
-			r.Patch("/{disciplineID}", app.updateDisciplineHandler)
-			r.Delete("/{disciplineID}", app.deleteDisciplineHandler)
+			r.Group(func(r chi.Router) {
+				r.Patch("/{disciplineID}", app.updateDisciplineHandler)
+				r.Delete("/{disciplineID}", app.deleteDisciplineHandler)
+			})
 		})
 		r.Route("/users", func(r chi.Router) {
 			// r.Get("/auth/google/login", app.googleLogin)
@@ -132,13 +140,37 @@ func (app *application) mount() *chi.Mux {
 		})
 		r.Route("/messages", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
-			r.Post("/conversations",app.createConversationHandler)
+			r.Post("/conversations", app.createConversationHandler)
 			r.Post("/conversations/{id}/messages", app.createMessageHandler)
 			r.Get("/conversations", app.getConversationsHandler)
 			r.Get("/conversations/{conversationID}", app.getConversationHandler)
 			r.Get("/{conversationID}", app.getMessagesHandler)
 			r.Put("/{conversationID}/read", app.markConversationReadHandler)
 			r.Get("/unread", app.getUnreadCountHandler)
+		})
+		r.Route("/mentors", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Post("/create", app.createMentorHandler)
+			r.Get("/", app.getMentorsHandler)
+			r.Get("/name/{mentorName}", app.getMentorByNameHandler)
+			r.Group(func(r chi.Router) {
+				r.Use(app.mentorContextMiddleware)
+				r.Get("/{mentorID}", app.getMentorByIDHandler)
+				r.Patch("/{mentorID}", app.updateMentorHandler)
+				r.Delete("/{mentorID}", app.deleteMentorHandler)
+			})
+		})
+		r.Route("/gigs", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Post("/create", app.createGigHandler)
+			r.Get("/", app.getAllGigsHandler)
+			r.Get("/expertise/{expertise}", app.getGigsByExpertiseHandler)
+			r.Get("/{gigID}", app.getGigByIDHandler)
+			r.Patch("/{gigID}", app.updateGigHandler)
+			r.Delete("/{gigID}", app.deleteGigHandler)
+			// r.Group(func(r chi.Router) {
+			// 	r.Use(app.gigContextMiddleware)
+			// })
 		})
 	})
 
