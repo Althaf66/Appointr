@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/lib/pq"
 )
@@ -11,55 +12,18 @@ import (
 var ErrNotFound = errors.New("resource not found")
 
 type Mentor struct {
-	ID               int64              `json:"id"`
-	Userid           int64              `json:"userid"`
-	Name             string             `json:"name"`
-	Country          string             `json:"country"`
-	Language         []string           `json:"language"`
-	Gigs             []*Gig             `json:"gigs"`
-	Education        []*Education       `json:"education"`
-	Experience       []*Experience      `json:"experience"`
-	WorkingNow       *WorkingAt         `json:"working_at"`
-	SocialMedia      []*SocialMedia     `json:"social_media"`
-	YearOfExperience *YearsOfExperience `json:"years_of_experience"`
-	CreatedAt        string             `json:"created_at"`
-	UpdatedAt        string             `json:"updated_at"`
-}
-
-type YearsOfExperience struct {
-	Userid int64 `json:"userid"`
-	Year   int64 `json:"year"`
-	Month  int64 `json:"month"`
-}
-
-type SocialMedia struct {
-	Userid int64  `json:"userid"`
-	Name   string `json:"name"`
-	Link   string `json:"link"`
-}
-
-type WorkingAt struct {
-	Userid  int64  `json:"userid"`
-	Title   string `json:"title"`
-	Company string `json:"company"`
-}
-
-type Education struct {
-	Userid    int64  `json:"userid"`
-	Year_from string `json:"year_from"`
-	Year_to   string `json:"year_to"`
-	Degree    string `json:"degree"`
-	Field     string `json:"field"`
-	Institute string `json:"institute"`
-}
-
-type Experience struct {
-	Userid      int64  `json:"userid"`
-	Year_from   string `json:"year_from"`
-	Year_to     string `json:"year_to"`
-	Title       string `json:"title"`
-	Company     string `json:"company"`
-	Description string `json:"description"`
+	ID          int64         `json:"id"`
+	Userid      int64         `json:"userid"`
+	Name        string        `json:"name"`
+	Country     string        `json:"country"`
+	Language    []string      `json:"language"`
+	Gigs        []Gig         `json:"gigs"`
+	Education   []Education   `json:"education"`
+	Experience  []Experience  `json:"experience"`
+	WorkingAt   *WorkingAt    `json:"workingat"`
+	BookingSlot []BookingSlot `json:"bookingslots"`
+	CreatedAt   string        `json:"created_at"`
+	UpdatedAt   string        `json:"updated_at"`
 }
 
 type MentorStore struct {
@@ -172,6 +136,467 @@ func (s *MentorStore) GetMentorByID(ctx context.Context, id int64) (*Mentor, err
 	}
 
 	return &mentor, nil
+}
+
+// GetMentorByUserID finds mentors by userid
+func (s *MentorStore) GetMentorByUserID(ctx context.Context, userid int64) (*Mentor, error) {
+	mentor := &Mentor{}
+	err := s.db.QueryRow(`
+        SELECT id, userid, name, country, language, created_at, updated_at
+        FROM mentors
+        WHERE userid = $1`, userid).Scan(
+		&mentor.ID,
+		&mentor.Userid,
+		&mentor.Name,
+		&mentor.Country,
+		pq.Array(&mentor.Language),
+		&mentor.CreatedAt,
+		&mentor.UpdatedAt,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("mentor with userid %d not found", userid)
+		}
+		return nil, err
+	}
+
+	// Fetch gigs
+	gigsRows, err := s.db.Query(`
+        SELECT id, title, description, expertise, discipline, created_at, updated_at
+        FROM gigs
+        WHERE userid = $1`, userid)
+	if err != nil {
+		return nil, err
+	}
+	defer gigsRows.Close()
+
+	for gigsRows.Next() {
+		gig := Gig{}
+		err = gigsRows.Scan(
+			&gig.ID,
+			&gig.Title,
+			&gig.Description,
+			&gig.Expertise,
+			pq.Array(&gig.Discipline),
+			&gig.CreatedAt,
+			&gig.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		mentor.Gigs = append(mentor.Gigs, gig)
+	}
+
+	// Fetch education
+	eduRows, err := s.db.Query(`
+        SELECT id, year_from, year_to, degree, field, institute
+        FROM education
+        WHERE userid = $1`, userid)
+	if err != nil {
+		return nil, err
+	}
+	defer eduRows.Close()
+
+	for eduRows.Next() {
+		edu := Education{}
+		err = eduRows.Scan(&edu.ID, &edu.Year_from, &edu.Year_to, &edu.Degree, &edu.Field, &edu.Institute)
+		if err != nil {
+			return nil, err
+		}
+		mentor.Education = append(mentor.Education, edu)
+	}
+
+	// Fetch experience
+	expRows, err := s.db.Query(`
+        SELECT id, year_from, year_to, title, company, description
+        FROM experience
+        WHERE userid = $1`, userid)
+	if err != nil {
+		return nil, err
+	}
+	defer expRows.Close()
+
+	for expRows.Next() {
+		exp := Experience{}
+		err = expRows.Scan(&exp.ID, &exp.Year_from, &exp.Year_to, &exp.Title, &exp.Company, &exp.Description)
+		if err != nil {
+			return nil, err
+		}
+		mentor.Experience = append(mentor.Experience, exp)
+	}
+
+	// Fetch working at (single record)
+	workingAt := WorkingAt{}
+	err = s.db.QueryRow(`
+        SELECT id, title, company, totalyear, month
+        FROM workingat
+        WHERE userid = $1`, userid).Scan(
+		&workingAt.ID,
+		&workingAt.Title,
+		&workingAt.Company,
+		&workingAt.TotalYear,
+		&workingAt.Month,
+	)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	if err == nil {
+		mentor.WorkingAt = &workingAt
+	}
+
+	// Fetch BookingSlot
+	bookingRows, err := s.db.Query(`
+        SELECT id, days, start_time, start_period, end_time, end_period
+        FROM bookingslots
+        WHERE userid = $1`, userid)
+	if err != nil {
+		return nil, err
+	}
+	defer bookingRows.Close()
+
+	for bookingRows.Next() {
+		slot := BookingSlot{}
+		err = bookingRows.Scan(&slot.ID, pq.Array(&slot.Days), &slot.StartTime, &slot.StartPeriod, &slot.EndTime, &slot.EndPeriod)
+		if err != nil {
+			return nil, err
+		}
+		mentor.BookingSlot = append(mentor.BookingSlot, slot)
+	}
+
+	return mentor, nil
+
+}
+
+func (s *MentorStore) GetMentorsByExpertise(ctx context.Context, expertise string) ([]*Mentor, error) {
+	// First get all userIDs with matching expertise
+	rows, err := s.db.Query(`
+        SELECT DISTINCT m.id, m.userid, m.name, m.country, m.language, m.created_at, m.updated_at
+        FROM mentors m
+        JOIN gigs g ON m.userid = g.userid
+        WHERE g.expertise = $1`, expertise)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var mentors []*Mentor
+	mentorMap := make(map[int64]*Mentor)
+
+	// Collect basic mentor info
+	for rows.Next() {
+		mentor := &Mentor{}
+		err = rows.Scan(
+			&mentor.ID,
+			&mentor.Userid,
+			&mentor.Name,
+			&mentor.Country,
+			pq.Array(&mentor.Language),
+			&mentor.CreatedAt,
+			&mentor.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		mentors = append(mentors, mentor)
+		mentorMap[mentor.Userid] = mentor
+	}
+
+	if len(mentors) == 0 {
+		return nil, fmt.Errorf("no mentors found with expertise: %s", expertise)
+	}
+
+	// Get all userIDs for batch queries
+	var userIDs []int64
+	for _, m := range mentors {
+		userIDs = append(userIDs, m.Userid)
+	}
+
+	// Fetch gigs
+	gigsRows, err := s.db.Query(`
+        SELECT id, userid, title, description, expertise, discipline, created_at, updated_at
+        FROM gigs
+        WHERE userid = ANY($1) AND expertise = $2`, pq.Array(userIDs), expertise)
+	if err != nil {
+		return nil, err
+	}
+	defer gigsRows.Close()
+
+	for gigsRows.Next() {
+		gig := Gig{}
+		var userID int64
+		err = gigsRows.Scan(
+			&gig.ID,
+			&userID,
+			&gig.Title,
+			&gig.Description,
+			&gig.Expertise,
+			pq.Array(&gig.Discipline),
+			&gig.CreatedAt,
+			&gig.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		if mentor, ok := mentorMap[userID]; ok {
+			mentor.Gigs = append(mentor.Gigs, gig)
+		}
+	}
+
+	// Fetch education
+	eduRows, err := s.db.Query(`
+        SELECT id, userid, year_from, year_to, degree, field, institute
+        FROM education
+        WHERE userid = ANY($1)`, pq.Array(userIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer eduRows.Close()
+
+	for eduRows.Next() {
+		edu := Education{}
+		var userID int64
+		err = eduRows.Scan(&edu.ID, &userID, &edu.Year_from, &edu.Year_to, &edu.Degree, &edu.Field, &edu.Institute)
+		if err != nil {
+			return nil, err
+		}
+		if mentor, ok := mentorMap[userID]; ok {
+			mentor.Education = append(mentor.Education, edu)
+		}
+	}
+
+	// Fetch experience
+	expRows, err := s.db.Query(`
+        SELECT id, userid, year_from, year_to, title, company, description
+        FROM experience
+        WHERE userid = ANY($1)`, pq.Array(userIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer expRows.Close()
+
+	for expRows.Next() {
+		exp := Experience{}
+		var userID int64
+		err = expRows.Scan(&exp.ID, &userID, &exp.Year_from, &exp.Year_to, &exp.Title, &exp.Company, &exp.Description)
+		if err != nil {
+			return nil, err
+		}
+		if mentor, ok := mentorMap[userID]; ok {
+			mentor.Experience = append(mentor.Experience, exp)
+		}
+	}
+
+	// Fetch working at
+	workRows, err := s.db.Query(`
+        SELECT id, userid, title, company, totalyear, month
+        FROM workingat
+        WHERE userid = ANY($1)`, pq.Array(userIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer workRows.Close()
+
+	for workRows.Next() {
+		work := WorkingAt{}
+		var userID int64
+		err = workRows.Scan(&work.ID, &userID, &work.Title, &work.Company, &work.TotalYear, &work.Month)
+		if err != nil {
+			return nil, err
+		}
+		if mentor, ok := mentorMap[userID]; ok {
+			mentor.WorkingAt = &work
+		}
+	}
+
+	// Fetch booking slot
+	bookingRows, err := s.db.Query(`
+        SELECT id,userid, days, start_time, start_period, end_time, end_period
+        FROM bookingslots
+        WHERE userid = ANY($1)`, pq.Array(userIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer bookingRows.Close()
+
+	for bookingRows.Next() {
+		slot := BookingSlot{}
+		var userID int64
+		err = bookingRows.Scan(&slot.ID, &userID, pq.Array(&slot.Days), &slot.StartTime, &slot.StartPeriod, &slot.EndTime, &slot.EndPeriod)
+		if err != nil {
+			return nil, err
+		}
+		if mentor, ok := mentorMap[userID]; ok {
+			mentor.BookingSlot = append(mentor.BookingSlot, slot)
+		}
+	}
+
+	return mentors, nil
+}
+
+func (s *MentorStore) GetMentorsByDiscipline(ctx context.Context, discipline string) ([]*Mentor, error) {
+	// First get all mentors with matching discipline using array contains operator
+	rows, err := s.db.Query(`
+        SELECT DISTINCT m.id, m.userid, m.name, m.country, m.language, m.created_at, m.updated_at
+        FROM mentors m
+        JOIN gigs g ON m.userid = g.userid
+        WHERE $1 = ANY(g.discipline)`, discipline)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var mentors []*Mentor
+	mentorMap := make(map[int64]*Mentor)
+
+	// Collect basic mentor info
+	for rows.Next() {
+		mentor := &Mentor{}
+		err = rows.Scan(
+			&mentor.ID,
+			&mentor.Userid,
+			&mentor.Name,
+			&mentor.Country,
+			pq.Array(&mentor.Language),
+			&mentor.CreatedAt,
+			&mentor.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		mentors = append(mentors, mentor)
+		mentorMap[mentor.Userid] = mentor
+	}
+
+	if len(mentors) == 0 {
+		return nil, fmt.Errorf("no mentors found with discipline: %s", discipline)
+	}
+
+	// Get all userIDs for batch queries
+	var userIDs []int64
+	for _, m := range mentors {
+		userIDs = append(userIDs, m.Userid)
+	}
+
+	// Fetch gigs (only those with matching discipline)
+	gigsRows, err := s.db.Query(`
+        SELECT id, userid, title, description, expertise, discipline, created_at, updated_at
+        FROM gigs
+        WHERE userid = ANY($1) AND $2 = ANY(discipline)`, pq.Array(userIDs), discipline)
+	if err != nil {
+		return nil, err
+	}
+	defer gigsRows.Close()
+
+	for gigsRows.Next() {
+		gig := Gig{}
+		var userID int64
+		err = gigsRows.Scan(
+			&gig.ID,
+			&userID,
+			&gig.Title,
+			&gig.Description,
+			&gig.Expertise,
+			pq.Array(&gig.Discipline),
+			&gig.CreatedAt,
+			&gig.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		if mentor, ok := mentorMap[userID]; ok {
+			mentor.Gigs = append(mentor.Gigs, gig)
+		}
+	}
+
+	// Fetch education
+	eduRows, err := s.db.Query(`
+        SELECT id, userid, year_from, year_to, degree, field, institute
+        FROM education
+        WHERE userid = ANY($1)`, pq.Array(userIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer eduRows.Close()
+
+	for eduRows.Next() {
+		edu := Education{}
+		var userID int64
+		err = eduRows.Scan(&edu.ID, &userID, &edu.Year_from, &edu.Year_to, &edu.Degree, &edu.Field, &edu.Institute)
+		if err != nil {
+			return nil, err
+		}
+		if mentor, ok := mentorMap[userID]; ok {
+			mentor.Education = append(mentor.Education, edu)
+		}
+	}
+
+	// Fetch experience
+	expRows, err := s.db.Query(`
+        SELECT id, userid, year_from, year_to, title, company, description
+        FROM experience
+        WHERE userid = ANY($1)`, pq.Array(userIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer expRows.Close()
+
+	for expRows.Next() {
+		exp := Experience{}
+		var userID int64
+		err = expRows.Scan(&exp.ID, &userID, &exp.Year_from, &exp.Year_to, &exp.Title, &exp.Company, &exp.Description)
+		if err != nil {
+			return nil, err
+		}
+		if mentor, ok := mentorMap[userID]; ok {
+			mentor.Experience = append(mentor.Experience, exp)
+		}
+	}
+
+	// Fetch working at
+	workRows, err := s.db.Query(`
+        SELECT id, userid, title, company, totalyear, month
+        FROM workingat
+        WHERE userid = ANY($1)`, pq.Array(userIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer workRows.Close()
+
+	for workRows.Next() {
+		work := WorkingAt{}
+		var userID int64
+		err = workRows.Scan(&work.ID, &userID, &work.Title, &work.Company, &work.TotalYear, &work.Month)
+		if err != nil {
+			return nil, err
+		}
+		if mentor, ok := mentorMap[userID]; ok {
+			mentor.WorkingAt = &work
+		}
+	}
+
+	// Fetch bookingslot
+	bookingRows, err := s.db.Query(`
+        SELECT id, userid, days, start_time, start_period, end_time, end_period
+        FROM bookingslots
+        WHERE userid = ANY($1)`, pq.Array(userIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer bookingRows.Close()
+
+	for bookingRows.Next() {
+		slot := BookingSlot{}
+		var userID int64
+		err = bookingRows.Scan(&slot.ID, &userID, pq.Array(&slot.Days), &slot.StartTime, &slot.StartPeriod, &slot.EndTime, &slot.EndPeriod)
+		if err != nil {
+			return nil, err
+		}
+		if mentor, ok := mentorMap[userID]; ok {
+			mentor.BookingSlot = append(mentor.BookingSlot, slot)
+		}
+	}
+
+	return mentors, nil
 }
 
 // GetMentorsByExpertise finds mentors by expertise

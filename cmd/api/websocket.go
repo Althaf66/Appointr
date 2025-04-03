@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -18,32 +19,6 @@ func (app *application) HandleWebSocket(wm *websocket.WebSocketManager) http.Han
 		conversationID, err := strconv.ParseInt(chi.URLParam(r, "conversationID"), 10, 64)
 		if err != nil {
 			app.badRequestResponse(w, r, err)
-			return
-		}
-
-		// Verify user has access to the conversation
-		user := getUserfromCtx(r)
-		if user == nil {
-			app.unauthorizedErrorResponse(w, r, err)
-			return
-		}
-
-		// Check if user is a participant
-		conv, err := app.store.Messages.GetConversation(r.Context(), conversationID)
-		if err != nil {
-			app.notFoundResponse(w, r, err)
-			return
-		}
-
-		isParticipant := false
-		for _, participant := range conv.Participants {
-			if participant.ID == user.ID {
-				isParticipant = true
-				break
-			}
-		}
-		if !isParticipant {
-			app.unauthorizedErrorResponse(w, r, err)
 			return
 		}
 
@@ -86,13 +61,13 @@ func (app *application) HandleWebSocket(wm *websocket.WebSocketManager) http.Han
 				Content:        incomingMsg.Content,
 			}
 
-			if err := app.store.Messages.CreateMessage(r.Context(), message); err != nil {
+			if err := app.store.Messages.CreateMessage(context.Background(), message); err != nil {
 				log.Printf("Error creating message: %v", err)
 				continue
 			}
 
 			// Get sender information
-			sender, err := app.store.Users.GetByID(r.Context(), message.SenderID)
+			sender, err := app.store.Users.GetByID(context.Background(), message.SenderID)
 			if err != nil {
 				log.Printf("Error getting sender: %v", err)
 				continue

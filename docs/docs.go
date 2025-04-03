@@ -112,6 +112,51 @@ const docTemplate = `{
                 }
             }
         },
+        "/bookingslots/create": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new booking slot",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "booking"
+                ],
+                "summary": "Create a new booking slot",
+                "parameters": [
+                    {
+                        "description": "Booking Slot",
+                        "name": "slot",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.RegisterBookingSlotPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {}
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/discipline": {
             "get": {
                 "security": [
@@ -185,6 +230,55 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/discipline/{disciplineField}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Fetches discipline by Field",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "discipline"
+                ],
+                "summary": "Fetches discipline",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Discipline Field",
+                        "name": "disciplineField",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.Discipline"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {}
                     },
                     "500": {
@@ -299,14 +393,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/discipline/{string}": {
-            "get": {
+        "/education/create": {
+            "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Fetches discipline by Field",
+                "description": "Create a new education",
                 "consumes": [
                     "application/json"
                 ],
@@ -314,14 +408,59 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "discipline"
+                    "education"
                 ],
-                "summary": "Fetches discipline",
+                "summary": "Create a new education",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Discipline Field",
-                        "name": "string",
+                        "description": "Education",
+                        "name": "education",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.RegisterEducationPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {}
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/education/u/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all education by user ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "education"
+                ],
+                "summary": "Get all education by user ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -330,12 +469,390 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/store.Discipline"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.Education"
+                            }
                         }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/education/{educationID}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete education by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "education"
+                ],
+                "summary": "Delete education",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Education ID",
+                        "name": "educationID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {}
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update education",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "education"
+                ],
+                "summary": "Update education",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Education ID",
+                        "name": "educationID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Education",
+                        "name": "education",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.UpdateEducationPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.Education"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/education/{educationid}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get education by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "education"
+                ],
+                "summary": "Get education by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Education ID",
+                        "name": "educationid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.Education"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/experience/create": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new experience",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "experience"
+                ],
+                "summary": "Create a new experience",
+                "parameters": [
+                    {
+                        "description": "Experience",
+                        "name": "experience",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.RegisterExperiencePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {}
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/experience/u/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all experience by user ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "experience"
+                ],
+                "summary": "Get all experience by user ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.Experience"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/experience/{experienceID}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete experience by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "experience"
+                ],
+                "summary": "Delete experience",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Experience ID",
+                        "name": "experienceID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update experience",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "experience"
+                ],
+                "summary": "Update experience",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Experience ID",
+                        "name": "experienceID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Experience",
+                        "name": "experience",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.UpdateExperiencePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.Experience"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/experience/{experienceid}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get experience by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "experience"
+                ],
+                "summary": "Get experience by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Experience ID",
+                        "name": "experienceid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.Experience"
+                        }
                     },
                     "404": {
                         "description": "Not Found",
@@ -1013,6 +1530,110 @@ const docTemplate = `{
                 }
             }
         },
+        "/mentors/dis/{discipline}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get mentor by discipline",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mentor"
+                ],
+                "summary": "Get mentor by discipline",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Expertise",
+                        "name": "discipline",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.Mentor"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/mentors/exp/{expertise}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get mentor by expertise",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mentor"
+                ],
+                "summary": "Get mentor by expertise",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Expertise",
+                        "name": "expertise",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.Mentor"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/mentors/name/{mentorName}": {
             "get": {
                 "security": [
@@ -1048,6 +1669,55 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/store.Mentor"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/mentors/u/{userID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get mentor by userID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mentor"
+                ],
+                "summary": "Get mentor by userID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Mentor ID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.Mentor"
                         }
                     },
                     "400": {
@@ -1536,6 +2206,240 @@ const docTemplate = `{
                 }
             }
         },
+        "/socialmedia/create": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new socialmedia",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "socialmedia"
+                ],
+                "summary": "Create a new socialmedia",
+                "parameters": [
+                    {
+                        "description": "SocialMedia",
+                        "name": "socialmedia",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.RegisterSocialMediaPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {}
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/socialmedia/u/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all socialmedia by user ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "socialmedia"
+                ],
+                "summary": "Get all socialmedia by user ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.SocialMedia"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/socialmedia/{socialMediaID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get socialmedia by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "socialmedia"
+                ],
+                "summary": "Get socialmedia by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SocialMedia ID",
+                        "name": "socialMediaID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.SocialMedia"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete socialmedia by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "socialmedia"
+                ],
+                "summary": "Delete socialmedia",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SocialMedia ID",
+                        "name": "socialMediaID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update socialmedia",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "socialmedia"
+                ],
+                "summary": "Update socialmedia",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "SocialMedia ID",
+                        "name": "socialMediaID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "SocialMedia",
+                        "name": "socialmedia",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.UpdateSocialMediaPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.SocialMedia"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/users/activate/{token}": {
             "put": {
                 "security": [
@@ -1626,6 +2530,240 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/workingat/create": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new workingat",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workingat"
+                ],
+                "summary": "Create a new workingat",
+                "parameters": [
+                    {
+                        "description": "WorkingAt",
+                        "name": "workingat",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.RegisterWorkingAtPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {}
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/workingat/u/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all workingat by user ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workingat"
+                ],
+                "summary": "Get all workingat by user ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.WorkingAt"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/workingat/{workingatID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get workingat by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workingat"
+                ],
+                "summary": "Get workingat by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "WorkingAt ID",
+                        "name": "workingatID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.WorkingAt"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete workingat by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workingat"
+                ],
+                "summary": "Delete workingat",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "WorkingAt ID",
+                        "name": "workingatID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update workingat",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workingat"
+                ],
+                "summary": "Update workingat",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "WorkingAt ID",
+                        "name": "workingatID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "WorkingAt",
+                        "name": "workingat",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.UpdateWorkingAtPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.WorkingAt"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1663,6 +2801,29 @@ const docTemplate = `{
                 }
             }
         },
+        "main.RegisterBookingSlotPayload": {
+            "type": "object",
+            "properties": {
+                "days": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "end_period": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "start_period": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                }
+            }
+        },
         "main.RegisterDisciplinePayload": {
             "type": "object",
             "properties": {
@@ -1670,6 +2831,54 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "subfield": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.RegisterEducationPayload": {
+            "type": "object",
+            "required": [
+                "degree",
+                "year_from"
+            ],
+            "properties": {
+                "degree": {
+                    "type": "string"
+                },
+                "field": {
+                    "type": "string"
+                },
+                "institute": {
+                    "type": "string"
+                },
+                "year_from": {
+                    "type": "string"
+                },
+                "year_to": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.RegisterExperiencePayload": {
+            "type": "object",
+            "required": [
+                "title",
+                "year_from"
+            ],
+            "properties": {
+                "company": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "year_from": {
+                    "type": "string"
+                },
+                "year_to": {
                     "type": "string"
                 }
             }
@@ -1735,6 +2944,20 @@ const docTemplate = `{
                 }
             }
         },
+        "main.RegisterSocialMediaPayload": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "link": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "main.RegisterUserPayload": {
             "type": "object",
             "required": [
@@ -1758,6 +2981,35 @@ const docTemplate = `{
                 }
             }
         },
+        "main.RegisterWorkingAtPayload": {
+            "type": "object",
+            "required": [
+                "title"
+            ],
+            "properties": {
+                "company": {
+                    "type": "string"
+                },
+                "github": {
+                    "type": "string"
+                },
+                "instagram": {
+                    "type": "string"
+                },
+                "linkedin": {
+                    "type": "string"
+                },
+                "month": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "totalyear": {
+                    "type": "integer"
+                }
+            }
+        },
         "main.UpdateDisciplinePayload": {
             "type": "object",
             "properties": {
@@ -1765,6 +3017,46 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "subfield": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.UpdateEducationPayload": {
+            "type": "object",
+            "properties": {
+                "degree": {
+                    "type": "string"
+                },
+                "field": {
+                    "type": "string"
+                },
+                "institute": {
+                    "type": "string"
+                },
+                "year_from": {
+                    "type": "string"
+                },
+                "year_to": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.UpdateExperiencePayload": {
+            "type": "object",
+            "properties": {
+                "company": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "year_from": {
+                    "type": "string"
+                },
+                "year_to": {
                     "type": "string"
                 }
             }
@@ -1818,6 +3110,43 @@ const docTemplate = `{
                 }
             }
         },
+        "main.UpdateSocialMediaPayload": {
+            "type": "object",
+            "properties": {
+                "link": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.UpdateWorkingAtPayload": {
+            "type": "object",
+            "properties": {
+                "company": {
+                    "type": "string"
+                },
+                "github": {
+                    "type": "string"
+                },
+                "instagram": {
+                    "type": "string"
+                },
+                "linkedin": {
+                    "type": "string"
+                },
+                "month": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "totalyear": {
+                    "type": "integer"
+                }
+            }
+        },
         "main.UserWithToken": {
             "type": "object",
             "properties": {
@@ -1838,6 +3167,41 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "store.BookingSlot": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "days": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "end_period": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "start_period": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "userid": {
+                    "type": "integer"
                 }
             }
         },
@@ -1900,6 +3264,9 @@ const docTemplate = `{
                 "field": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "integer"
+                },
                 "institute": {
                     "type": "string"
                 },
@@ -1922,6 +3289,9 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                },
+                "id": {
+                    "type": "integer"
                 },
                 "title": {
                     "type": "string"
@@ -1986,6 +3356,12 @@ const docTemplate = `{
         "store.Mentor": {
             "type": "object",
             "properties": {
+                "bookingslots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/store.BookingSlot"
+                    }
+                },
                 "country": {
                     "type": "string"
                 },
@@ -2022,23 +3398,14 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "social_media": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/store.SocialMedia"
-                    }
-                },
                 "updated_at": {
                     "type": "string"
                 },
                 "userid": {
                     "type": "integer"
                 },
-                "working_at": {
+                "workingat": {
                     "$ref": "#/definitions/store.WorkingAt"
-                },
-                "years_of_experience": {
-                    "$ref": "#/definitions/store.YearsOfExperience"
                 }
             }
         },
@@ -2076,6 +3443,9 @@ const docTemplate = `{
         "store.SocialMedia": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "integer"
+                },
                 "link": {
                     "type": "string"
                 },
@@ -2113,24 +3483,28 @@ const docTemplate = `{
                 "company": {
                     "type": "string"
                 },
-                "title": {
+                "github": {
                     "type": "string"
                 },
-                "userid": {
+                "id": {
                     "type": "integer"
-                }
-            }
-        },
-        "store.YearsOfExperience": {
-            "type": "object",
-            "properties": {
+                },
+                "instagram": {
+                    "type": "string"
+                },
+                "linkedin": {
+                    "type": "string"
+                },
                 "month": {
                     "type": "integer"
                 },
-                "userid": {
+                "title": {
+                    "type": "string"
+                },
+                "totalyear": {
                     "type": "integer"
                 },
-                "year": {
+                "userid": {
                     "type": "integer"
                 }
             }

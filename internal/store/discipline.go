@@ -101,25 +101,32 @@ func (s *DisciplineStore) Get(ctx context.Context) ([]*Discipline, error) {
 	return disciplineList, nil
 }
 
-func (s *DisciplineStore) GetByField(ctx context.Context, field string) (*Discipline, error) {
+func (s *DisciplineStore) GetByField(ctx context.Context, field string) ([]*Discipline, error) {
 	query := `
 		SELECT id, field, subfield FROM discipline WHERE field = $1
 	`
-	var dis Discipline
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeOutDuration)
 	defer cancel()
 
-	err := s.db.QueryRowContext(ctx, query, field).Scan(&dis.ID, &dis.Field, &dis.SubField)
-
+	rows, err := s.db.QueryContext(ctx, query, field)
 	if err != nil {
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
-			return nil, ErrDisciplineNotFound
-		default:
+		return nil, err
+	}
+	defer rows.Close()
+
+	var disciplineList []*Discipline
+	for rows.Next() {
+		var dis Discipline
+		err := rows.Scan(&dis.ID, &dis.Field, &dis.SubField)
+		if err != nil {
 			return nil, err
 		}
+		disciplineList = append(disciplineList, &dis)
 	}
-	return &dis, nil
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return disciplineList, nil
 }
 
 func (s *DisciplineStore) GetByID(ctx context.Context, id int64) (*Discipline, error) {

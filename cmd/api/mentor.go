@@ -132,6 +132,76 @@ func (app *application) getMentorByNameHandler(w http.ResponseWriter, r *http.Re
 	}
 }
 
+// getMentorByExpertiseHandler godoc
+//
+//	@Summary		Get mentor by expertise
+//	@Description	Get mentor by expertise
+//	@Tags			mentor
+//	@Accept			json
+//	@Produce		json
+//	@Param			expertise	path		string	true	"Expertise"
+//	@Success		200			{object}	[]store.Mentor
+//	@Failure		400			{object}	error
+//	@Failure		401			{object}	error
+//	@Failure		500			{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/mentors/exp/{expertise} [get]
+func (app *application) getMentorByExpertiseHandler(w http.ResponseWriter, r *http.Request) {
+	expertise := chi.URLParam(r, "expertise")
+
+	mentors, err := app.store.Mentor.GetMentorsByExpertise(r.Context(), expertise)
+	if err != nil {
+		switch err {
+		case store.ErrNotFound:
+			app.notFoundResponse(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+		}
+		return
+	}
+
+	err = JsonResponse(w, http.StatusOK, mentors)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
+
+// getMentorByDisciplineHandler godoc
+//
+//	@Summary		Get mentor by discipline
+//	@Description	Get mentor by discipline
+//	@Tags			mentor
+//	@Accept			json
+//	@Produce		json
+//	@Param			discipline	path		string	true	"Expertise"
+//	@Success		200			{object}	[]store.Mentor
+//	@Failure		400			{object}	error
+//	@Failure		401			{object}	error
+//	@Failure		500			{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/mentors/dis/{discipline} [get]
+func (app *application) getMentorByDisciplineHandler(w http.ResponseWriter, r *http.Request) {
+	discipline := chi.URLParam(r, "discipline")
+
+	mentors, err := app.store.Mentor.GetMentorsByDiscipline(r.Context(), discipline)
+	if err != nil {
+		switch err {
+		case store.ErrNotFound:
+			app.notFoundResponse(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+		}
+		return
+	}
+
+	err = JsonResponse(w, http.StatusOK, mentors)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
+
 // getMentorByIDHandler godoc
 //
 //	@Summary		Get mentor by ID
@@ -150,6 +220,46 @@ func (app *application) getMentorByIDHandler(w http.ResponseWriter, r *http.Requ
 	mentor := getMentorFromCtx(r)
 
 	mentors, err := app.store.Mentor.GetMentorByID(r.Context(), mentor.ID)
+	if err != nil {
+		switch {
+		case errors.Is(err, store.ErrNotFound):
+			app.notFoundResponse(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+		}
+		return
+	}
+
+	err = JsonResponse(w, http.StatusOK, mentors)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
+
+// getMentorByUserIDHandler godoc
+//
+//	@Summary		Get mentor by userID
+//	@Description	Get mentor by userID
+//	@Tags			mentor
+//	@Accept			json
+//	@Produce		json
+//	@Param			userID	path		int	true	"Mentor ID"
+//	@Success		200		{object}	store.Mentor
+//	@Failure		400		{object}	error
+//	@Failure		401		{object}	error
+//	@Failure		500		{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/mentors/u/{userID} [get]
+func (app *application) getMentorByUserIDHandler(w http.ResponseWriter, r *http.Request) {
+	// user := getUserfromCtx(r)
+	userID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	mentors, err := app.store.Mentor.GetMentorByUserID(r.Context(), userID)
 	if err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):

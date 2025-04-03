@@ -29,7 +29,7 @@ type Storage struct {
 		Update(context.Context, *Discipline) error
 		Delete(context.Context, int64) error
 		GetByID(context.Context, int64) (*Discipline, error)
-		GetByField(context.Context, string) (*Discipline, error)
+		GetByField(context.Context, string) ([]*Discipline, error)
 	}
 	Messages interface {
 		CreateConversation(ctx context.Context, userID1, userID2 int64) (*Conversation, error)
@@ -48,8 +48,9 @@ type Storage struct {
 		GetMentorByID(ctx context.Context, id int64) (*Mentor, error)
 		UpdateMentor(ctx context.Context, mentor *Mentor) error
 		DeleteMentor(ctx context.Context, mentorID int64) error
-		// GetMentorsByExpertise(ctx context.Context, expertise string) ([]*Mentor, error)
-		// GetMentorsByDiscipline(ctx context.Context, discipline string) ([]*Mentor, error)
+		GetMentorByUserID(ctx context.Context, userid int64) (*Mentor, error)
+		GetMentorsByExpertise(ctx context.Context, expertise string) ([]*Mentor, error)
+		GetMentorsByDiscipline(ctx context.Context, discipline string) ([]*Mentor, error)
 	}
 	Gig interface {
 		CreateGig(ctx context.Context, gig *Gig) error
@@ -60,16 +61,56 @@ type Storage struct {
 		GetGigByID(ctx context.Context, id int64) (*Gig, error)
 		// GetGigByMentorID(ctx context.Context, mentorID int64) ([]*Gig, error)
 	}
+	Education interface {
+		CreateEducation(ctx context.Context, education *Education) error
+		GetEducationById(ctx context.Context, id int64) (*Education, error)
+		GetEducationByUserId(ctx context.Context, userid int64) ([]*Education, error)
+		UpdateEducation(ctx context.Context, education *Education) error
+		DeleteEducation(ctx context.Context, educationID int64) error
+	}
+	Experience interface {
+		CreateExperience(ctx context.Context, experience *Experience) error
+		GetExperienceById(ctx context.Context, id int64) (*Experience, error)
+		GetExperienceByUserId(ctx context.Context, userid int64) ([]*Experience, error)
+		UpdateExperience(ctx context.Context, experience *Experience) error
+		DeleteExperience(ctx context.Context, experienceID int64) error
+	}
+	SocialMedia interface {
+		CreateSocialMedia(ctx context.Context, socialmedia *SocialMedia) error
+		GetSocialMediaById(ctx context.Context, id int64) (*SocialMedia, error)
+		GetSocialMediaByUserId(ctx context.Context, userid int64) ([]*SocialMedia, error)
+		UpdateSocialMedia(ctx context.Context, socialmedia *SocialMedia) error
+		DeleteSocialMedia(ctx context.Context, socialmediaID int64) error
+	}
+	WorkingAt interface {
+		CreateWorkingAt(ctx context.Context, workingat *WorkingAt) error
+		GetWorkingAtById(ctx context.Context, id int64) (*WorkingAt, error)
+		GetWorkingAtByUserId(ctx context.Context, userid int64) ([]*WorkingAt, error)
+		UpdateWorkingAt(ctx context.Context, workingat *WorkingAt) error
+		DeleteWorkingAt(ctx context.Context, workingatID int64) error
+	}
+	BookingSlot interface {
+		CreateBookingSlot(ctx context.Context, slot *BookingSlot) error
+		// GetBookingSlotByID(ctx context.Context, id int64) (*BookingSlot, error)
+		// GetBookingSlotByUserID(ctx context.Context, userID int64) ([]*BookingSlot, error)
+		// UpdateBookingSlot(ctx context.Context, slot *BookingSlot) error
+		// DeleteBookingSlot(ctx context.Context, slotID int64) error
+	}
 }
 
 func NewPostgresStorage(db *sql.DB) Storage {
 	return Storage{
-		Users:      &UserStore{db},
-		Expertise:  &ExpertiseStore{db},
-		Discipline: &DisciplineStore{db},
-		Messages:   &MessageStore{db},
-		Mentor:     &MentorStore{db},
-		Gig:        &GigStore{db},
+		Users:       &UserStore{db},
+		Expertise:   &ExpertiseStore{db},
+		Discipline:  &DisciplineStore{db},
+		Messages:    &MessageStore{db},
+		Mentor:      &MentorStore{db},
+		Gig:         &GigStore{db},
+		Education:   &EducationStore{db},
+		Experience:  &ExperienceStore{db},
+		SocialMedia: &SocialMediaStore{db},
+		WorkingAt:   &WorkingAtStore{db},
+		BookingSlot: &BookingStore{db},
 	}
 }
 

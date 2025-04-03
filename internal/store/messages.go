@@ -29,7 +29,7 @@ type Message struct {
 	ID             int64     `json:"id"`
 	ConversationID int64     `json:"conversation_id"`
 	SenderID       int64     `json:"sender_id"`
-	Content        string    `json:"content"`
+	Content        string    `json:"content,omitempty"`
 	CreatedAt      time.Time `json:"created_at"`
 	IsRead         bool      `json:"is_read"`
 	// Derived fields
@@ -176,7 +176,7 @@ func (s *MessageStore) GetUserConversations(ctx context.Context, userID int64) (
 	rows, err := s.db.QueryContext(ctx, `
 		SELECT c.id, c.created_at, c.updated_at,
 			(SELECT COUNT(*) FROM messages m WHERE m.conversation_id = c.id AND m.sender_id != $1 AND m.is_read = false) as unread_count,
-			m.id, m.sender_id, m.content, m.created_at, m.is_read,
+			m.content,
 			u.id, u.username, u.email, u.created_at
 		FROM conversations c
 		JOIN conversation_participants cp ON c.id = cp.conversation_id
@@ -203,14 +203,20 @@ func (s *MessageStore) GetUserConversations(ctx context.Context, userID int64) (
 			OtherUser:   &User{},
 		}
 
+		var lastMessageContent sql.NullString
+
 		err := rows.Scan(
 			&conv.ID, &conv.CreatedAt, &conv.UpdatedAt, &conv.Unread,
-			&conv.LastMessage.ID, &conv.LastMessage.SenderID, &conv.LastMessage.Content, &conv.LastMessage.CreatedAt, &conv.LastMessage.IsRead,
+			&lastMessageContent,
 			&conv.OtherUser.ID, &conv.OtherUser.Username, &conv.OtherUser.Email, &conv.OtherUser.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
+
+		if lastMessageContent.Valid {
+            conv.LastMessage.Content = lastMessageContent.String
+        }
 
 		// Handle nullable message fields
 		// if msgID.Valid {
@@ -230,9 +236,6 @@ func (s *MessageStore) GetUserConversations(ctx context.Context, userID int64) (
 
 // CreateMessage adds a new message to a conversation
 func (s *MessageStore) CreateMessage(ctx context.Context, message *Message) error {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
 	// Verify the sender is a participant in the conversation
 	var count int
 	err := s.db.QueryRowContext(ctx, `

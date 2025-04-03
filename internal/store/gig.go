@@ -37,9 +37,8 @@ func (s *GigStore) CreateGig(ctx context.Context, gig *Gig) error {
 		INSERT INTO gigs (userid, title, description, expertise, discipline)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, created_at, updated_at`,
-		gig.Userid, gig.Title, gig.Description, gig.Expertise, pq.Array(gig.Discipline)).Scan(
-		&gig.ID, &gig.CreatedAt, &gig.UpdatedAt,
-	)
+		gig.Userid, gig.Title, gig.Description, gig.Expertise, pq.Array(gig.Discipline)).
+		Scan(&gig.ID, &gig.CreatedAt, &gig.UpdatedAt)
 	if err != nil {
 		return err
 	}
@@ -80,7 +79,6 @@ func (s *GigStore) GetAllGigs(ctx context.Context, limit, offset int) ([]*Gig, e
 	return gigs, nil
 }
 
-// getbyexpertise
 func (s *GigStore) GetGigsByExpertise(ctx context.Context, expertise string) ([]*Gig, error) {
 	query := `SELECT id,userid,title,expertise,discipline,created_at,updated_at FROM 
 	gigs WHERE expertise ILIKE $1`

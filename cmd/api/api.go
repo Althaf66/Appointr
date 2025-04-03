@@ -94,7 +94,6 @@ func (app *application) mount() *chi.Mux {
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	r.Route("/ws", func(r chi.Router) {
-		r.Use(app.AuthTokenMiddleware) // Ensure authenticated access
 		r.Get("/messages/{conversationID}", app.HandleWebSocket(app.wsManager))
 	})
 
@@ -132,7 +131,6 @@ func (app *application) mount() *chi.Mux {
 				r.Use(app.AuthTokenMiddleware)
 				r.Get("/", app.getUserHandler)
 			})
-
 		})
 		r.Route("/authentication", func(r chi.Router) {
 			r.Post("/user", app.registerUserHandler)
@@ -153,6 +151,9 @@ func (app *application) mount() *chi.Mux {
 			r.Post("/create", app.createMentorHandler)
 			r.Get("/", app.getMentorsHandler)
 			r.Get("/name/{mentorName}", app.getMentorByNameHandler)
+			r.Get("/exp/{expertise}", app.getMentorByExpertiseHandler)
+			r.Get("/dis/{discipline}", app.getMentorByDisciplineHandler)
+			r.Get("/u/{userID}", app.getMentorByUserIDHandler)
 			r.Group(func(r chi.Router) {
 				r.Use(app.mentorContextMiddleware)
 				r.Get("/{mentorID}", app.getMentorByIDHandler)
@@ -171,6 +172,45 @@ func (app *application) mount() *chi.Mux {
 			// r.Group(func(r chi.Router) {
 			// 	r.Use(app.gigContextMiddleware)
 			// })
+		})
+		r.Route("/education", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Post("/create", app.createEducationHandler)
+			r.Get("/u/{id}", app.getEducationByUserIDHandler)
+			r.Get("/{educationID}", app.getEducationByIDHandler)
+			r.Patch("/{educationID}", app.updateEducationHandler)
+			r.Delete("/{educationID}", app.deleteEducationHandler)
+		})
+		r.Route("/experience", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Post("/create", app.createExperienceHandler)
+			r.Get("/u/{id}", app.getExperienceByUserIDHandler)
+			r.Get("/{experienceID}", app.getExperienceByIDHandler)
+			r.Patch("/{experienceID}", app.updateExperienceHandler)
+			r.Delete("/{experienceID}", app.deleteExperienceHandler)
+		})
+		r.Route("/socialmedia", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Post("/create", app.createSocialMediaHandler)
+			r.Get("/u/{id}", app.getSocialMediaByUserIDHandler)
+			r.Get("/{socialMediaID}", app.getSocialMediaByIDHandler)
+			r.Patch("/{socialMediaID}", app.updateSocialMediaHandler)
+			r.Delete("/{socialMediaID}", app.deleteSocialMediaHandler)
+		})
+		r.Route("/workingat", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Post("/create", app.createWorkingAtHandler)
+			r.Get("/u/{id}", app.getWorkingAtByUserIDHandler)
+			r.Get("/{workingatID}", app.getWorkingAtByIDHandler)
+			r.Patch("/{workingatID}", app.updateWorkingAtHandler)
+			r.Delete("/{workingatID}", app.deleteWorkingAtHandler)
+		})
+		r.Route("/bookingslots", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Post("/create", app.createBookingSlotHandler) // POST /bookingslots/create
+			// r.Get("/", getBookingSlots)          // GET /bookingslots
+			// r.Patch("/{id}", updateBookingSlot)  // PATCH /bookingslots/{id}
+			// r.Delete("/{id}", deleteBookingSlot) // DELETE /bookingslots/{id}
 		})
 	})
 
