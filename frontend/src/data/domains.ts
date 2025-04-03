@@ -8,33 +8,33 @@ export interface Domain {
 export const domains: Domain[] = [
   {
     id: 'engineering',
-    name: 'Engineering',
+    name: 'IT',
     icon: 'Code2',
     description: 'Software Engineering, DevOps, and System Architecture'
   },
   {
-    id: 'design',
-    name: 'Design',
-    icon: 'Palette',
+    id: 'medical',
+    name: 'Medical',
+    icon: 'ShieldPlus',
     description: 'Product Design, UX/UI, and Visual Design'
   },
   {
-    id: 'product',
-    name: 'Product',
-    icon: 'Layout',
+    id: 'law',
+    name: 'Law',
+    icon: 'Scale',
     description: 'Product Management and Strategy'
+  },
+  {
+    id: 'farming',
+    name: 'Agriculture',
+    icon: 'Tractor',
+    description: 'Data Science, Analytics, and Machine Learning'
   },
   {
     id: 'marketing',
     name: 'Marketing',
-    icon: 'Target',
-    description: 'Digital Marketing, Growth, and Analytics'
-  },
-  {
-    id: 'data',
-    name: 'Data',
     icon: 'Database',
-    description: 'Data Science, Analytics, and Machine Learning'
+    description: 'Digital Marketing, Growth, and Analytics'
   },
   {
     id: 'leadership',

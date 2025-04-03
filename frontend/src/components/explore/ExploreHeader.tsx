@@ -1,20 +1,13 @@
-import React, { useState } from 'react';
+// import React, { useState } from 'react';
 import { Search, Code2, ChevronDown } from 'lucide-react';
-import { domains } from '../../data/domains';
+// import { domains } from '../../data/domains';
 
 export const ExploreHeader = () => {
-  const [isDomainsOpen, setIsDomainsOpen] = useState(false);
+  // const [isDomainsOpen, setIsDomainsOpen] = useState(false);
 
   return (
     <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-            <Code2 size={24} className="text-blue-600 dark:text-blue-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Engineering Mentors</h1>
-        </div>
-
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -22,19 +15,19 @@ export const ExploreHeader = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 <input
                   type="text"
-                  placeholder="Search engineering mentors..."
+                  placeholder="Search by mentors name...."
                   className="w-full pl-10 pr-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               
-              <button
+              {/* <button
                 onClick={() => setIsDomainsOpen(!isDomainsOpen)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                <ChevronDown size={20} />
-              </button>
+              > */}
+                {/* <ChevronDown size={20} /> */}
+              {/* </button> */}
 
-              {isDomainsOpen && (
+              {/* {isDomainsOpen && (
                 <div className="absolute z-10 w-full mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
                   <div className="p-2">
                     {domains.map((domain) => (
@@ -54,15 +47,9 @@ export const ExploreHeader = () => {
                     ))}
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
-          
-          <select className="border rounded-lg px-4 py-2 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option>Most Relevant</option>
-            <option>Recently Added</option>
-            <option>Most Popular</option>
-          </select>
         </div>
       </div>
     </div>

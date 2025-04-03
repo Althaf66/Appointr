@@ -25,15 +25,23 @@ const MessagesPage: React.FC = () => {
 
   useEffect(() => {
     if (selectedConversation) {
-      ws.current = new WebSocket(`ws://localhost:8080/ws/messages/${selectedConversation}?token=${token}`);
+      const wsUrl = `ws://localhost:8080/ws/messages/${selectedConversation}`;
+      ws.current = new WebSocket(wsUrl);
+  
       ws.current.onmessage = (event) => {
         const message = JSON.parse(event.data);
         console.log("WebSocket :", message);
         setMessages((prevMessages) => [...prevMessages, message]);
       };
+  
       ws.current.onerror = (error) => {
         console.error("WebSocket error:", error);
       };
+  
+      ws.current.onclose = () => {
+        console.log("WebSocket connection closed");
+      };
+  
       return () => {
         ws.current?.close();
       };

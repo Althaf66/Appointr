@@ -14,12 +14,12 @@ export const ProfilePage = () => {
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <ProfileHeader />
-            <ProfileStats />
-            <UpcomingSessions />
+            {/* <ProfileStats /> */}
+            {/* <UpcomingSessions /> */}
           </div>
           <div className="lg:col-span-1">
             <div className="sticky top-24">
-              <ProfileSettings />
+              {/* <ProfileSettings /> */}
             </div>
           </div>
         </div>
