@@ -162,7 +162,7 @@ func (s *MentorStore) GetMentorByUserID(ctx context.Context, userid int64) (*Men
 
 	// Fetch gigs
 	gigsRows, err := s.db.Query(`
-        SELECT id, title, description, expertise, discipline, created_at, updated_at
+        SELECT id, title, amount,description, expertise, discipline, created_at, updated_at
         FROM gigs
         WHERE userid = $1`, userid)
 	if err != nil {
@@ -175,6 +175,7 @@ func (s *MentorStore) GetMentorByUserID(ctx context.Context, userid int64) (*Men
 		err = gigsRows.Scan(
 			&gig.ID,
 			&gig.Title,
+			&gig.Amount,
 			&gig.Description,
 			&gig.Expertise,
 			pq.Array(&gig.Discipline),
@@ -313,7 +314,7 @@ func (s *MentorStore) GetMentorsByExpertise(ctx context.Context, expertise strin
 
 	// Fetch gigs
 	gigsRows, err := s.db.Query(`
-        SELECT id, userid, title, description, expertise, discipline, created_at, updated_at
+        SELECT id, userid, title, amount,description, expertise, discipline, created_at, updated_at
         FROM gigs
         WHERE userid = ANY($1) AND expertise = $2`, pq.Array(userIDs), expertise)
 	if err != nil {
@@ -328,6 +329,7 @@ func (s *MentorStore) GetMentorsByExpertise(ctx context.Context, expertise strin
 			&gig.ID,
 			&userID,
 			&gig.Title,
+			&gig.Amount,
 			&gig.Description,
 			&gig.Expertise,
 			pq.Array(&gig.Discipline),
@@ -479,7 +481,7 @@ func (s *MentorStore) GetMentorsByDiscipline(ctx context.Context, discipline str
 
 	// Fetch gigs (only those with matching discipline)
 	gigsRows, err := s.db.Query(`
-        SELECT id, userid, title, description, expertise, discipline, created_at, updated_at
+        SELECT id, userid, title, amount,description, expertise, discipline, created_at, updated_at
         FROM gigs
         WHERE userid = ANY($1) AND $2 = ANY(discipline)`, pq.Array(userIDs), discipline)
 	if err != nil {
@@ -494,6 +496,7 @@ func (s *MentorStore) GetMentorsByDiscipline(ctx context.Context, discipline str
 			&gig.ID,
 			&userID,
 			&gig.Title,
+			&gig.Amount,
 			&gig.Description,
 			&gig.Expertise,
 			pq.Array(&gig.Discipline),

@@ -11,7 +11,10 @@ import {
   Star, 
   ChevronRight,
   Globe, 
-  MessageCircle 
+  MessageCircle,
+  Github,
+  Linkedin,
+  Instagram
 } from 'lucide-react';
 
 interface MentorDetails {
@@ -20,10 +23,10 @@ interface MentorDetails {
   name: string;
   country: string;
   language: string[];
-  gigs: { title: string; description: string; expertise: string; discipline: string[] }[];
+  gigs: { title: string; amount: number; description: string; expertise: string; discipline: string[] }[];
   education: { degree: string; field: string; institute: string; year_from: string; year_to: string }[];
   experience: { title: string; company: string; description: string; year_from: string; year_to: string }[];
-  workingat: { title: string; company: string; totalyear: number };
+  workingat: { title: string; company: string; totalyear: number; linkedin: string; github: string; instagram: string };
   bookingslots: { days: string[]; start_time: string; end_time: string; start_period: string; end_period: string }[];
 }
 
@@ -85,24 +88,9 @@ export const MentorDetails: React.FC = () => {
         console.log('API response:', response.data.data);
         setMentor(response.data.data);
         
-        // Set default selected date to first available day
-        if (response.data.data.bookingslots?.length > 0) {
-          const today = new Date();
-          const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-          const availableDays = response.data.data.bookingslots.flatMap((slot: { days: any; }) => slot.days);
-          
-          // Find the next available date based on bookingslots.days
-          for (let i = 0; i < 7; i++) {
-            const nextDate = new Date(today);
-            nextDate.setDate(today.getDate() + i);
-            const dayName = dayNames[nextDate.getDay()];
-            
-            if (availableDays.includes(dayName)) {
-              setSelectedDate(formatDate(nextDate));
-              break;
-            }
-          }
-        }
+        // Set default selected date to today
+        const today = new Date();
+        setSelectedDate(formatDate(today));
         
         setLoading(false);
       } catch (err) {
@@ -110,7 +98,7 @@ export const MentorDetails: React.FC = () => {
         setLoading(false);
       }
     };
-
+  
     fetchMentorDetails();
   }, [id]);
 
@@ -121,39 +109,45 @@ export const MentorDetails: React.FC = () => {
     return `${day} ${month} ${year}`;
   };
 
+  // Get the next 7 consecutive days from today
   const getAvailableDates = () => {
-    if (!mentor?.bookingslots?.length) return [];
-    
-    const availableDays = mentor.bookingslots.flatMap(slot => slot.days);
     const today = new Date();
     const dates = [];
     
     for (let i = 0; i < 7; i++) {
       const nextDate = new Date(today);
       nextDate.setDate(today.getDate() + i);
-      const dayName = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][nextDate.getDay()];
       
-      if (availableDays.includes(dayName)) {
-        dates.push({
-          date: nextDate,
-          dayName: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][nextDate.getDay()],
-          day: nextDate.getDate(),
-          month: nextDate.toLocaleString('default', { month: 'short' }),
-          formatted: formatDate(nextDate)
-        });
-      }
+      const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][nextDate.getDay()];
+      const shortDayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][nextDate.getDay()];
+      
+      // Check if this day has any available slots
+      const hasSlots = mentor?.bookingslots?.some(slot => 
+        slot.days.includes(dayName)
+      ) || false;
+      
+      dates.push({
+        date: nextDate,
+        dayName: shortDayName,
+        day: nextDate.getDate(),
+        month: nextDate.toLocaleString('default', { month: 'short' }),
+        formatted: formatDate(nextDate),
+        hasSlots: hasSlots
+      });
     }
     
     return dates;
   };
 
+  // Generate one-hour time slots for the selected date
   const getTimeSlots = () => {
     if (!mentor?.bookingslots?.length) return [];
     
     // Get day of the week for selected date
     const [day, month, year] = selectedDate.split(' ');
     const selectedDateObj = new Date(`${month} ${day} ${year}`);
-    const dayName = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][selectedDateObj.getDay()];
+    const dayIndex = selectedDateObj.getDay();
+    const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayIndex];
     
     // Find booking slots for this day
     const availableSlots = mentor.bookingslots.filter(slot => 
@@ -162,30 +156,51 @@ export const MentorDetails: React.FC = () => {
     
     if (availableSlots.length === 0) return [];
     
-    // Generate 30 min time slots between start and end time
     const timeSlots: TimeSlot[] = [];
     
     availableSlots.forEach(slot => {
-      let startHour = parseInt(slot.start_time);
-      let endHour = parseInt(slot.end_time);
+      // Parse start and end times
+      const [startHourStr, startMinuteStr] = slot.start_time.split(':');
+      const [endHourStr, endMinuteStr] = slot.end_time.split(':');
       
-      // Adjust for 12-hour format
+      let startHour = parseInt(startHourStr, 10);
+      let startMinute = parseInt(startMinuteStr, 10);
+      let endHour = parseInt(endHourStr, 10);
+      let endMinute = parseInt(endMinuteStr, 10);
+      
+      // Convert to 24-hour format
       if (slot.start_period === 'PM' && startHour !== 12) startHour += 12;
       if (slot.end_period === 'PM' && endHour !== 12) endHour += 12;
       if (slot.start_period === 'AM' && startHour === 12) startHour = 0;
       if (slot.end_period === 'AM' && endHour === 12) endHour = 0;
       
-      for (let hour = startHour; hour < endHour; hour++) {
-        for (let minute = 0; minute < 60; minute += 30) {
-          if (hour === endHour && minute > 0) continue;
+      // Convert times to minutes since midnight
+      const startTimeInMinutes = startHour * 60 + startMinute;
+      const endTimeInMinutes = endHour * 60 + endMinute;
+      
+      // Calculate duration in minutes
+      const duration = endTimeInMinutes - startTimeInMinutes;
+      
+      // Always add the start time as the first slot
+      let displayHour = startHour % 12;
+      if (displayHour === 0) displayHour = 12;
+      const period = startHour >= 12 ? 'PM' : 'AM';
+      const startTimeString = `${displayHour}:${startMinute.toString().padStart(2, '0')}`;
+      timeSlots.push({ time: startTimeString, period });
+      
+      // Only add additional 30-minute slots if there's enough time
+      if (duration >= 30) {
+        for (let time = startTimeInMinutes + 30; time < endTimeInMinutes; time += 30) {
+          const hour = Math.floor(time / 60);
+          const minute = time % 60;
           
-          let displayHour = hour % 12;
-          if (displayHour === 0) displayHour = 12;
+          let slotHour = hour % 12;
+          if (slotHour === 0) slotHour = 12;
           
-          const period = hour >= 12 ? 'PM' : 'AM';
-          const timeString = `${displayHour}:${minute === 0 ? '00' : minute}`;
+          const slotPeriod = hour >= 12 ? 'PM' : 'AM';
+          const timeString = `${slotHour}:${minute.toString().padStart(2, '0')}`;
           
-          timeSlots.push({ time: timeString, period });
+          timeSlots.push({ time: timeString, period: slotPeriod });
         }
       }
     });
@@ -193,12 +208,44 @@ export const MentorDetails: React.FC = () => {
     return timeSlots;
   };
 
-  const handleBookSession = () => {
-    if (!selectedTimeSlot) return;
-    
-    // Here you would implement the actual booking logic
-    alert(`Booking confirmed for ${selectedDate} at ${selectedTimeSlot.time} ${selectedTimeSlot.period}`);
-    setShowBookingModal(false);
+  const handleBookSession = async () => {
+    if (!selectedTimeSlot || !mentor?.userid) return;
+
+    // Get day of week from selected date
+    const [dayNum, month, year] = selectedDate.split(' ');
+    const dateObj = new Date(`${month} ${dayNum} ${year}`);
+    const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dateObj.getDay()];
+
+    const bookingData = {
+      mentorid: mentor.userid,
+      day: dayName,
+      date: selectedDate,
+      start_time: selectedTimeSlot.time,
+      start_period: selectedTimeSlot.period,
+      amount: mentor.gigs && mentor.gigs.length > 0 ? mentor.gigs[0].amount : 0 // Use amount from first gig or default to 0
+    };
+
+    try {
+      const response = await axios.post(
+        'http://localhost:8080/v1/meetings/create',
+        bookingData,
+        getAxiosConfig()
+      );
+      
+      alert(`Booking confirmed for ${selectedDate} at ${selectedTimeSlot.time} ${selectedTimeSlot.period}`);
+      setShowBookingModal(false);
+    } catch (error) {
+      console.error('Failed to book session:', error);
+      alert('Failed to book session. Please try again.');
+    }
+  };
+
+  // Calculate session amount
+  const getSessionAmount = () => {
+    if (mentor?.gigs && mentor.gigs.length > 0) {
+      return mentor.gigs.map(gig => gig.amount).reduce((a, b) => Math.min(a, b), Infinity);
+    }
+    return 0;
   };
 
   if (loading) {
@@ -227,6 +274,7 @@ export const MentorDetails: React.FC = () => {
 
   const availableDates = getAvailableDates();
   const timeSlots = getTimeSlots();
+  const sessionAmount = getSessionAmount();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
@@ -265,12 +313,43 @@ export const MentorDetails: React.FC = () => {
                     <MapPin size={16} className="mr-1" />
                     <span>{mentor.country}</span>
                   </div>
-                  
-                  <div className="flex items-center">
-                    <Globe size={16} className="mr-1" />
-                    <span>{mentor.language.join(', ')}</span>
-                  </div>
                 </div>
+
+                {/* Social Media Links */}
+                {mentor.workingat && (
+                  <div className="flex items-center mt-2 space-x-3">
+                    {mentor.workingat.github && (
+                      <a 
+                        href={mentor.workingat.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                      >
+                        <Github size={18} />
+                      </a>
+                    )}
+                    {mentor.workingat.linkedin && (
+                      <a 
+                        href={mentor.workingat.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                      >
+                        <Linkedin size={18} />
+                      </a>
+                    )}
+                    {mentor.workingat.instagram && (
+                      <a 
+                        href={mentor.workingat.instagram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                      >
+                        <Instagram size={18} />
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
   
               <div className="flex gap-3">
@@ -281,11 +360,11 @@ export const MentorDetails: React.FC = () => {
                   Book a Session
                 </button>
                 <button 
-            onClick={handleMessage}
-            className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-          >
-            Message
-          </button>
+                  onClick={handleMessage}
+                  className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                >
+                  Message
+                </button>
               </div>
             </div>
           </div>
@@ -328,53 +407,83 @@ export const MentorDetails: React.FC = () => {
                   </div>
                 </section>
               )}
+              
+              {/* Languages */}
+              {mentor.language?.length > 0 && (
+                <section className="mb-6">
+                  <div className="flex items-center mb-3">
+                    <Globe size={18} className="mr-2 text-gray-600 dark:text-gray-400" />
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Languages</h2>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {mentor.language.map((lang, index) => (
+                      <span 
+                        key={index} 
+                        className="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-3 py-1 text-sm rounded-full"
+                      >
+                        {lang}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Current Working At - displayed first */}
+              {mentor.workingat && mentor.workingat.company && (
+                <section className="mb-6">
+                  <div className="flex items-center mb-3">
+                    <Briefcase size={18} className="mr-2 text-gray-600 dark:text-gray-400" />
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Currently Working At</h2>
+                  </div>
+                  
+                  <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                    <div className="flex justify-between">
+                      <div>
+                        <h3 className="font-medium text-gray-900 dark:text-white">{mentor.workingat.title}</h3>
+                        <p className="text-gray-600 dark:text-gray-400">{mentor.workingat.company}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-3 py-1 text-xs font-medium text-green-800 dark:text-green-300">
+                          Current
+                        </span>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{mentor.workingat.totalyear} years</p>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              )}
   
               {/* Experience */}
-              {(mentor.experience?.length > 0 || mentor.workingat) && (
+              {mentor.experience?.length > 0 && (
                 <section className="mb-6">
                   <div className="flex items-center mb-3">
                     <Briefcase size={18} className="mr-2 text-gray-600 dark:text-gray-400" />
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Professional Experience</h2>
                   </div>
                   
-                  {mentor.workingat && (
-                    <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                      <div className="flex justify-between">
-                        <div>
-                          <h3 className="font-medium text-gray-900 dark:text-white">{mentor.workingat.title}</h3>
-                          <p className="text-gray-600 dark:text-gray-400">{mentor.workingat.company}</p>
+                  <div className="space-y-4">
+                    {mentor.experience.map((exp, index) => (
+                      <div 
+                        key={index} 
+                        className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
+                      >
+                        <div className="flex justify-between">
+                          <div>
+                            <h3 className="font-medium text-gray-900 dark:text-white">{exp.title}</h3>
+                            <p className="text-gray-600 dark:text-gray-400">{exp.company}</p>
+                          </div>
+                          <p className="text-gray-500 dark:text-gray-400 text-sm">
+                            {exp.year_from} - {exp.year_to}
+                          </p>
                         </div>
-                        <div className="text-right">
-                          <span className="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-3 py-1 text-xs font-medium text-green-800 dark:text-green-300">
-                            Current
-                          </span>
-                          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{mentor.workingat.totalyear} years</p>
-                        </div>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">{exp.description}</p>
                       </div>
-                    </div>
-                  )}
-                  
-                  {mentor.experience?.length > 0 && mentor.experience.map((exp, index) => (
-                    <div 
-                      key={index} 
-                      className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
-                    >
-                      <div className="flex justify-between">
-                        <div>
-                          <h3 className="font-medium text-gray-900 dark:text-white">{exp.title}</h3>
-                          <p className="text-gray-600 dark:text-gray-400">{exp.company}</p>
-                        </div>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">
-                          {exp.year_from} - {exp.year_to}
-                        </p>
-                      </div>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">{exp.description}</p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </section>
               )}
   
-              {/* Education */}
+              {/* Education - updated to show years on the right */}
               {mentor.education?.length > 0 && (
                 <section className="mb-6">
                   <div className="flex items-center mb-3">
@@ -388,9 +497,15 @@ export const MentorDetails: React.FC = () => {
                         key={index} 
                         className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
                       >
-                        <h3 className="font-medium text-gray-900 dark:text-white">{edu.degree} in {edu.field}</h3>
-                        <p className="text-gray-600 dark:text-gray-400">{edu.institute}</p>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">{edu.year_from} - {edu.year_to}</p>
+                        <div className="flex justify-between">
+                          <div>
+                            <h3 className="font-medium text-gray-900 dark:text-white">{edu.degree} in {edu.field}</h3>
+                            <p className="text-gray-600 dark:text-gray-400">{edu.institute}</p>
+                          </div>
+                          <p className="text-gray-500 dark:text-gray-400 text-sm">
+                            {edu.year_from} - {edu.year_to}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -400,6 +515,16 @@ export const MentorDetails: React.FC = () => {
   
             {/* Sidebar with booking slots - rightmost column */}
             <div className="p-6 lg:col-span-1">
+              {/* Session Amount */}
+              {sessionAmount > 0 && (
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 mb-6 border border-gray-200 dark:border-gray-600">
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">Session Rate</h3>
+                  <p className="text-2xl font-bold text-teal-600 dark:text-teal-400">₹{sessionAmount}</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">for 30 min session</p>
+                </div>
+              )}
+
+              {/* Availability - Show all slots */}
               {mentor.bookingslots?.length > 0 && (
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 mb-6 border border-gray-200 dark:border-gray-600 sticky top-6">
                   <div className="flex items-center justify-between mb-4">
@@ -411,12 +536,12 @@ export const MentorDetails: React.FC = () => {
                       onClick={() => setShowBookingModal(true)}
                       className="text-blue-600 dark:text-blue-400 text-sm hover:underline flex items-center"
                     >
-                      View all <ChevronRight size={16} />
+                      Book Now <ChevronRight size={16} />
                     </button>
                   </div>
                   
                   <div className="space-y-3">
-                    {mentor.bookingslots.slice(0, 3).map((slot, index) => (
+                    {mentor.bookingslots.map((slot, index) => (
                       <div 
                         key={index} 
                         className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm"
@@ -445,8 +570,8 @@ export const MentorDetails: React.FC = () => {
         {/* Booking Modal */}
         {showBookingModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full mx-4 overflow-hidden">
-              <div className="p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col overflow-hidden">
+              <div className="p-6 flex-shrink-0">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Book a Session</h3>
                   <button 
@@ -459,21 +584,26 @@ export const MentorDetails: React.FC = () => {
                     </svg>
                   </button>
                 </div>
-                
+              </div>
+              
+              <div className="px-6 pb-6 overflow-y-auto flex-grow">
                 <div className="mb-6">
                   <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Available sessions</h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Book 1:1 sessions from the options based on your needs</p>
                   
-                  {/* Date Selection */}
+                  {/* Date Selection - Always show 7 days */}
                   <div className="flex overflow-x-auto space-x-2 py-2 mb-4">
                     {availableDates.map((date, index) => (
                       <button
                         key={index}
                         onClick={() => setSelectedDate(date.formatted)}
+                        disabled={!date.hasSlots}
                         className={`flex-shrink-0 p-3 rounded-lg border ${
                           selectedDate === date.formatted 
                             ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 dark:border-teal-500' 
-                            : 'border-gray-200 dark:border-gray-700'
+                            : date.hasSlots 
+                              ? 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600' 
+                              : 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
                         }`}
                       >
                         <p className="text-xs text-center text-gray-500 dark:text-gray-400">{date.dayName}</p>
@@ -483,32 +613,42 @@ export const MentorDetails: React.FC = () => {
                             : 'text-gray-900 dark:text-white'
                         }`}>{date.day}</p>
                         <p className="text-xs text-center text-gray-500 dark:text-gray-400">{date.month}</p>
-                        <p className="text-xs text-center text-green-500 mt-1">23 slots</p>
+                        {date.hasSlots ? (
+                          <p className="text-xs text-center text-green-500 mt-1">Available</p>
+                        ) : (
+                          <p className="text-xs text-center text-gray-400 mt-1">No slots</p>
+                        )}
                       </button>
                     ))}
                   </div>
-                  
-                  {/* Time Slots */}
-                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex justify-between items-center">
+          
+          {/* Time Slots */}
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex justify-between items-center">
                     Available time slots
-                    <ChevronRight size={16} className="text-gray-400" />
+                    <span className="text-xs text-gray-500">{timeSlots.length} slots available</span>
                   </h4>
                   
-                  <div className="grid grid-cols-3 gap-3 mb-4">
-                    {timeSlots.map((slot, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedTimeSlot(slot)}
-                        className={`p-3 rounded-lg border text-center ${
-                          selectedTimeSlot?.time === slot.time && selectedTimeSlot?.period === slot.period
-                            ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 dark:border-teal-500 text-teal-600 dark:text-teal-400' 
-                            : 'border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white'
-                        }`}
-                      >
-                        {slot.time} {slot.period}
-                      </button>
-                    ))}
-                  </div>
+                  {timeSlots.length > 0 ? (
+                    <div className="grid grid-cols-4 gap-3 mb-4">
+                      {timeSlots.map((slot, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedTimeSlot(slot)}
+                          className={`p-3 rounded-lg border text-center ${
+                            selectedTimeSlot?.time === slot.time && selectedTimeSlot?.period === slot.period
+                              ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/20 dark:border-teal-500 text-teal-600 dark:text-teal-400' 
+                              : 'border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:border-gray-300 dark:hover:border-gray-600'
+                          }`}
+                        >
+                          {slot.time} {slot.period}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                      No available slots for this day
+                    </div>
+                  )}
                   
                   <button
                     onClick={handleBookSession}
@@ -519,7 +659,9 @@ export const MentorDetails: React.FC = () => {
                         : 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
                     }`}
                   >
-                    Book Session for {selectedDate.split(' ').slice(0, 2).join(' ')} {selectedDate.includes('2025') ? '2025' : ''}
+                    {selectedTimeSlot 
+                      ? `Book Session for ${selectedDate.split(' ').slice(0, 2).join(' ')} ${new Date().getFullYear()} ${mentor.gigs[0]?.amount ? `($${mentor.gigs[0].amount})` : ''}` 
+                      : 'Select a time slot'}
                   </button>
                 </div>
               </div>

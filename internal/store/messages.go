@@ -215,8 +215,8 @@ func (s *MessageStore) GetUserConversations(ctx context.Context, userID int64) (
 		}
 
 		if lastMessageContent.Valid {
-            conv.LastMessage.Content = lastMessageContent.String
-        }
+			conv.LastMessage.Content = lastMessageContent.String
+		}
 
 		// Handle nullable message fields
 		// if msgID.Valid {
@@ -236,6 +236,9 @@ func (s *MessageStore) GetUserConversations(ctx context.Context, userID int64) (
 
 // CreateMessage adds a new message to a conversation
 func (s *MessageStore) CreateMessage(ctx context.Context, message *Message) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	// Verify the sender is a participant in the conversation
 	var count int
 	err := s.db.QueryRowContext(ctx, `

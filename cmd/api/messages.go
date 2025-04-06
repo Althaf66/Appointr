@@ -131,11 +131,11 @@ func (app *application) createMessageHandler(w http.ResponseWriter, r *http.Requ
 		Content:        req.Content,
 	}
 
-	err = app.store.Messages.CreateMessage(r.Context(), message)
-	if err != nil {
-		app.badRequestResponse(w, r, errors.New("content is required"))
-		return
-	}
+	// err = app.store.Messages.CreateMessage(r.Context(), message)
+	// if err != nil {
+	// 	app.badRequestResponse(w, r, errors.New("content is required"))
+	// 	return
+	// }
 
 	WriteJSON(w, http.StatusCreated, message)
 }

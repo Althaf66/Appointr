@@ -4,11 +4,9 @@ export interface Mentor {
   name: string;
   avatar?: string;
   country?: string;
-  hourlyRate?: number;
-  availabilityDetails?: string;
   language?: string[];
   education?: { degree: string; institution: string; year: string }[];
-  gigs?: { title: string; description: string; expertise: string; discipline: string[] }[];
+  gigs?: { title: string; description: string; amount: number; expertise: string; discipline: string[] }[];
   experience?: { title: string; company: string; description: string; year_from: string; year_to: string }[];
   workingat?: { title: string; company: string; totalyear: number };
   bookingslots?: { days: string[]; start_time: string; end_time: string; start_period: string; end_period: string }[];

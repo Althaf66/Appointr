@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ChevronRight, GalleryVerticalEnd, X } from 'lucide-react';
 import { API_URL } from '../../App';
@@ -7,20 +7,66 @@ interface GigDetailsProps {
   onNext: () => void;
 }
 
+interface Expertise {
+  name: string;
+}
+
+interface Discipline {
+  id: number;
+  field: string;
+  subfield: string;
+}
+
 export const GigDetails = ({ onNext }: GigDetailsProps) => {
   const [formData, setFormData] = useState({
     title: '',
+    amount: 0,
     description: '',
     expertise: '',
     discipline: [] as string[],
   });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [expertiseOptions, setExpertiseOptions] = useState<string[]>([]);
+  const [disciplineOptions, setDisciplineOptions] = useState<Discipline[]>([]);
+
+  // Fetch expertise options
+  useEffect(() => {
+    const fetchExpertise = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/v1/expertise');
+        const expertiseData: Expertise[] = response.data.data;
+        const expertiseNames = expertiseData.map(item => item.name);
+        setExpertiseOptions(expertiseNames);
+      } catch (err) {
+        setError('Failed to fetch expertise options');
+        console.error('Error fetching expertise:', err);
+      }
+    };
+
+    fetchExpertise();
+  }, []);
+
+  // Fetch discipline options
+  useEffect(() => {
+    const fetchDisciplines = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/v1/discipline');
+        const disciplineData: { data: Discipline[] } = response.data;
+        setDisciplineOptions(disciplineData.data);
+      } catch (err) {
+        setError('Failed to fetch discipline options');
+        console.error('Error fetching disciplines:', err);
+      }
+    };
+
+    fetchDisciplines();
+  }, []);
 
   const handleDisciplineChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedOptions = Array.from(e.target.selectedOptions)
       .map(option => option.value)
-      .filter(value => value !== ''); // Filter out the placeholder value
+      .filter(value => value !== '');
     const newDisciplines = [...new Set([...formData.discipline, ...selectedOptions])];
     setFormData({
       ...formData,
@@ -73,6 +119,11 @@ export const GigDetails = ({ onNext }: GigDetailsProps) => {
     }
   };
 
+  // Filter discipline options based on selected expertise
+  const filteredDisciplines = disciplineOptions.filter(
+    discipline => discipline.field === formData.expertise
+  );
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
@@ -104,19 +155,35 @@ export const GigDetails = ({ onNext }: GigDetailsProps) => {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Amount ($)
+        </label>
+        <input
+          type="number"
+          required
+          min="0"
+          value={formData.amount}
+          onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
+          className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500"
+          placeholder="e.g., 50"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Expertise Field
         </label>
         <select
           required
           value={formData.expertise}
-          onChange={(e) => setFormData({ ...formData, expertise: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, expertise: e.target.value, discipline: [] })} // Reset discipline when expertise changes
           className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500"
         >
           <option value="">Select your main expertise</option>
-          <option value="software">Software Development</option>
-          <option value="design">Product Design</option>
-          <option value="data">Data Science</option>
-          <option value="product">Product Management</option>
+          {expertiseOptions.map((expertise) => (
+            <option key={expertise} value={expertise}>
+              {expertise}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -132,12 +199,16 @@ export const GigDetails = ({ onNext }: GigDetailsProps) => {
           value={formData.discipline}
           onChange={handleDisciplineChange}
           className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 h-32"
+          disabled={!formData.expertise} // Disable until expertise is selected
         >
-          <option value="" disabled>Select subcategories</option>
-          <option value="frontend">Frontend Development</option>
-          <option value="backend">Backend Development</option>
-          <option value="mobile">Mobile Development</option>
-          <option value="devops">DevOps</option>
+          <option value="" disabled>
+            {formData.expertise ? 'Select subcategories' : 'Select expertise first'}
+          </option>
+          {filteredDisciplines.map((discipline) => (
+            <option key={discipline.id} value={discipline.subfield}>
+              {discipline.subfield}
+            </option>
+          ))}
         </select>
 
         {formData.discipline.length > 0 && (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from '../components/Navbar';
 import { DomainTabs } from '../components/DomainTabs';
 import { ExploreHeader } from '../components/explore/ExploreHeader';

@@ -89,6 +89,19 @@ type Storage struct {
 		UpdateWorkingAt(ctx context.Context, workingat *WorkingAt) error
 		DeleteWorkingAt(ctx context.Context, workingatID int64) error
 	}
+	Meetings interface {
+		CreateMeeting(ctx context.Context, meeting *Meetings) error
+		GetAllMeetings(ctx context.Context, limit, offset int) ([]*Meetings, error)
+		GetMeetingByUserID(ctx context.Context, userID int64) ([]*Meetings, error)
+		GetMeetingMentorNotConfirm(ctx context.Context, mentorID int64) ([]*Meetings, error)
+		GetMeetingUserNotPaid(ctx context.Context, userID int64) ([]*Meetings, error)
+		GetMeetingUserNotCompleted(ctx context.Context, userID int64) ([]*Meetings, error)
+		UpdateMeetingConfirm(ctx context.Context, meetingID int64) error
+		UpdateMeetingPaid(ctx context.Context, meetingID int64) error
+		UpdateMeetingCompleted(ctx context.Context, meetingID int64) error
+		DeleteMeeting(ctx context.Context, meetingID int64) error
+		GetMeetingByID(ctx context.Context, id int64) (*Meetings, error)
+	}
 	BookingSlot interface {
 		CreateBookingSlot(ctx context.Context, slot *BookingSlot) error
 		// GetBookingSlotByID(ctx context.Context, id int64) (*BookingSlot, error)
@@ -111,6 +124,7 @@ func NewPostgresStorage(db *sql.DB) Storage {
 		SocialMedia: &SocialMediaStore{db},
 		WorkingAt:   &WorkingAtStore{db},
 		BookingSlot: &BookingStore{db},
+		Meetings:    &MeetingsStore{db},
 	}
 }
 

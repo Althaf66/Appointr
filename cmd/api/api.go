@@ -34,13 +34,15 @@ type application struct {
 }
 
 type config struct {
-	addr        string
-	env         string
-	frontendURL string
-	apiUrl      string
-	db          dbConfig
-	mail        mailconfig
-	auth        authConfig
+	addr          string
+	env           string
+	frontendURL   string
+	apiUrl        string
+	db            dbConfig
+	mail          mailconfig
+	auth          authConfig
+	stripeKey     string
+	stripeWebhook string
 }
 
 type dbConfig struct {
@@ -85,7 +87,7 @@ func (app *application) mount() *chi.Mux {
 	r.Use(middleware.RequestID)
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{env.GetString("CORS_ALLOWED_ORIGIN", "http://localhost:5173")},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
@@ -135,6 +137,11 @@ func (app *application) mount() *chi.Mux {
 		r.Route("/authentication", func(r chi.Router) {
 			r.Post("/user", app.registerUserHandler)
 			r.Post("/token", app.createTokenHandler)
+		})
+		r.Post("/webhook", app.handleWebhook)
+		r.Route("/payment", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Post("/create-checkout-session", app.createCheckoutSession)
 		})
 		r.Route("/messages", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
@@ -204,6 +211,19 @@ func (app *application) mount() *chi.Mux {
 			r.Get("/{workingatID}", app.getWorkingAtByIDHandler)
 			r.Patch("/{workingatID}", app.updateWorkingAtHandler)
 			r.Delete("/{workingatID}", app.deleteWorkingAtHandler)
+		})
+		r.Put("/meetings/paid/{meetingID}", app.updateMeetingPaidHandler)
+		r.Route("/meetings", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Post("/create", app.createMeetingHandler)
+			r.Get("/", app.getAllMeetingsHandler)
+			r.Get("/u/{userID}", app.getMeetingByUserIDHandler)
+			r.Get("/mentor-not-confirm/{mentorID}", app.getMeetingMentorNotConfirmHandler)
+			r.Get("/user-not-paid/{userID}", app.getMeetingUserNotPaidHandler)
+			r.Get("/user-not-completed/{userID}", app.getMeetingUserNotCompletedHandler)
+			r.Put("/confirm/{meetingID}", app.updateMeetingConfirmHandler)
+			r.Put("/completed/{meetingID}", app.updateMeetingCompletedHandler)
+			r.Delete("/{meetingID}", app.deleteMeetingHandler)
 		})
 		r.Route("/bookingslots", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)

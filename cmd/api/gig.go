@@ -19,12 +19,14 @@ const gigCtx mentorKey = "gig"
 type RegisterGigPayload struct {
 	Title       string   `json:"title" validate:"required,max=100"`
 	Description string   `json:"description" validate:"required"`
+	Amount      float64  `json:"amount" validate:"required"`
 	Expertise   string   `json:"expertise" validate:"required"`
 	Discipline  []string `json:"discipline" validate:"required"`
 }
 
 type UpdateGigPayload struct {
 	Title       *string   `json:"title"`
+	Amount      *float64  `json:"amount"`
 	Description *string   `json:"description"`
 	Expertise   *string   `json:"expertise"`
 	Discipline  *[]string `json:"discipline"`
@@ -63,6 +65,7 @@ func (app *application) createGigHandler(w http.ResponseWriter, r *http.Request)
 		Userid: user.ID,
 		// Mentorid:    payload.MentorID,
 		Title:       payload.Title,
+		Amount:      payload.Amount,
 		Description: payload.Description,
 		Expertise:   payload.Expertise,
 		Discipline:  payload.Discipline,
@@ -226,7 +229,7 @@ func (app *application) updateGigHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Since all fields are optional, we only validate if at least one field is provided
-	hasUpdates := payload.Title != nil || payload.Description != nil ||
+	hasUpdates := payload.Title != nil || payload.Amount != nil || payload.Description != nil ||
 		payload.Expertise != nil || payload.Discipline != nil
 	if !hasUpdates {
 		app.badRequestResponse(w, r, errors.New("no fields provided for update"))
@@ -236,6 +239,9 @@ func (app *application) updateGigHandler(w http.ResponseWriter, r *http.Request)
 	// Update only provided fields
 	if payload.Title != nil {
 		gig.Title = *payload.Title
+	}
+	if payload.Amount != nil {
+		gig.Amount = *payload.Amount
 	}
 	if payload.Description != nil {
 		gig.Description = *payload.Description

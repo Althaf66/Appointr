@@ -66,6 +66,8 @@ func main() {
 				iss:    "appointr",
 			},
 		},
+		stripeKey:     env.GetString("STRIPE_KEY", "sk_test_51NpubpSF2Iapc3CYMensOJgnQjo4anfwi9MNLOFIjNkOBYRxzEP8gMctadHwISPfAERy31iKNejTs50cRCu1bCxV00NycUfZ06"),
+		stripeWebhook: env.GetString("STRIPE_WEBHOOK", "whsec_5048a44b5392d726f42c8c6ed46045c2f062db8d551ed0dd1ff239c4bcbdf26d"),
 	}
 
 	// logger
