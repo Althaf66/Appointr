@@ -81,7 +81,7 @@ export const DomainTabs: React.FC<DomainTabsProps> = ({ onMentorsUpdate }) => {
     const fetchDomains = async () => {
       try {
         const response = await axios.get(
-          `${API_URL}/expertise`,
+          `${API_URL}/v1/expertise`,
           getAxiosConfig()
         );
         setDomains(response.data.data || []);
@@ -107,7 +107,7 @@ export const DomainTabs: React.FC<DomainTabsProps> = ({ onMentorsUpdate }) => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `${API_URL}/discipline/${selectedDomain}`,
+          `${API_URL}/v1/discipline/${selectedDomain}`,
           getAxiosConfig()
         );
         setSubfields(response.data.data || []);
@@ -133,7 +133,7 @@ export const DomainTabs: React.FC<DomainTabsProps> = ({ onMentorsUpdate }) => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${API_URL}/mentors/exp/${expertise}`,
+        `${API_URL}/v1/mentors/exp/${expertise}`,
         getAxiosConfig()
       );
       const mentors = response.data.data || [];
@@ -153,7 +153,7 @@ export const DomainTabs: React.FC<DomainTabsProps> = ({ onMentorsUpdate }) => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${API_URL}/mentors/dis/${discipline}`,
+        `${API_URL}/v1/mentors/dis/${discipline}`,
         getAxiosConfig()
       );
       const mentors = response.data.data || [];

@@ -54,7 +54,7 @@ const MessagesPage: React.FC = () => {
 
   const fetchConversations = async () => {
     try {
-      const res = await axios.get(`${API_URL}/messages/conversations`, {
+      const res = await axios.get(`${API_URL}/v1/messages/conversations`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setConversations(Array.isArray(res.data.data) ? res.data.data : []);
@@ -67,7 +67,7 @@ const MessagesPage: React.FC = () => {
 
   const fetchMessages = async (conversationID: number) => {
     try {
-      const res = await axios.get(`${API_URL}/messages/${conversationID}`, {
+      const res = await axios.get(`${API_URL}/v1/messages/${conversationID}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const sortedMessages = Array.isArray(res.data.data) 
@@ -97,7 +97,7 @@ const MessagesPage: React.FC = () => {
   const sendMessage = async () => {
     if (!selectedConversation || !newMessage.trim()) return;
     try {
-      await axios.post(`${API_URL}/messages/conversations/${selectedConversation}/messages`,
+      await axios.post(`${API_URL}/v1/messages/conversations/${selectedConversation}/messages`,
         { content: newMessage },
         { headers: { Authorization: `Bearer ${token}` } }
       );

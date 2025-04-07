@@ -17,7 +17,7 @@ export const LoginPage = () => {
     setError('');
 
     try {
-      const response = await fetch(`${API_URL}/authentication/token`, {
+      const response = await fetch(`${API_URL}/v1/authentication/token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

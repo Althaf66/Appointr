@@ -47,7 +47,7 @@ export const WorkingNowDetails = ({ onNext }: WorkingNowDetailsProps) => {
     try {
       // Post working at details
       const workingAtResponse = await axios.post(
-        `${API_URL}/workingat/create`,
+        `${API_URL}/v1/workingat/create`,
         workingAtPayload,
         {
           headers: {

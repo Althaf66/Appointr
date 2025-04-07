@@ -18,7 +18,7 @@ export const SignupPage = () => {
     setError('');
 
     try {
-      const response = await fetch(`${API_URL}/authentication/user`, {
+      const response = await fetch(`${API_URL}/v1/authentication/user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

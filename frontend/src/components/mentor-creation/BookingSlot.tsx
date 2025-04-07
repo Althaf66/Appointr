@@ -110,7 +110,7 @@ export const BookingSlot = () => {
         };
         console.log(payload)
         const response = await axios.post(
-          `${API_URL}/bookingslots/create`,
+          `${API_URL}/v1/bookingslots/create`,
           payload, // Send each slot individually as a JSON object
           {
             headers: {

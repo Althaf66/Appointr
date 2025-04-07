@@ -30,7 +30,7 @@ export const BasicDetails = ({ onNext }: BasicDetailsProps) => {
     const token = localStorage.getItem('token');
     try {
       const response = await axios.post(
-        `${API_URL}/mentors/create`,
+        `${API_URL}/v1/mentors/create`,
         formData,
         {
           headers: {

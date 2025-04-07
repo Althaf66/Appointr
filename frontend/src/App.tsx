@@ -14,7 +14,7 @@ import { BasicDetailsPage } from './pages/BasicDetails';
 import { Room } from './pages/Room';
 import { Meeting } from './pages/Meeting';
 
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/v1"
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080"
 
 function App() {
   return (

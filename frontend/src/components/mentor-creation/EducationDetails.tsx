@@ -68,7 +68,7 @@ export const EducationDetails = ({ onNext }: EducationDetailsProps) => {
         };
 
         const response = await axios.post(
-          `${API_URL}/education/create`,
+          `${API_URL}/v1/education/create`,
           payload,
           {
             headers: {

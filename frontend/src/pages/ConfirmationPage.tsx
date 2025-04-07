@@ -12,7 +12,7 @@ export const ConfirmationPage = () => {
   const handleConfirm = async () => {
     setStatus('loading');
     try {
-      const response = await fetch(`${API_URL}/users/activate/${token}`, {
+      const response = await fetch(`${API_URL}/v1/users/activate/${token}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

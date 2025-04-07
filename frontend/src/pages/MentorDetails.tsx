@@ -63,7 +63,7 @@ export const MentorDetails: React.FC = () => {
       }
 
       const response = await axios.post(
-        `${API_URL}/messages/conversations`,
+        `${API_URL}/v1/messages/conversations`,
         {
           other_user_id: mentor.userid
         },
@@ -83,7 +83,7 @@ export const MentorDetails: React.FC = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `${API_URL}/mentors/u/${id}`,
+          `${API_URL}/v1/mentors/u/${id}`,
           getAxiosConfig()
         );
         console.log('API response:', response.data.data);
@@ -228,7 +228,7 @@ export const MentorDetails: React.FC = () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/meetings/create`,
+        `${API_URL}/v1/meetings/create`,
         bookingData,
         getAxiosConfig()
       );

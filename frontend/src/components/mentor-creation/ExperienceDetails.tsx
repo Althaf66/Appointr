@@ -68,7 +68,7 @@ export const ExperienceDetails = ({ onNext }: ExperienceDetailsProps) => {
         };
         console.log(payload)
         const response = await axios.post(
-          `${API_URL}/experience/create`,
+          `${API_URL}/v1/experience/create`,
           payload,
           {
             headers: {
