@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { AuthLayout } from './AuthLayout';
 import { useNavigate } from 'react-router-dom'; // Add this import
+import { API_URL } from '../../App';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ export const LoginPage = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8080/v1/authentication/token', {
+      const response = await fetch(`${API_URL}/authentication/token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

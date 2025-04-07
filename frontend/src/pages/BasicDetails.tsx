@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Globe, Loader2, ChevronRight, User, MapPin, Languages, X, Plus } from 'lucide-react';
-
-const API_URL = 'http://localhost:8080/v1';
+import { API_URL } from '../App';
 
 export const BasicDetailsPage = () => {
   const navigate = useNavigate();

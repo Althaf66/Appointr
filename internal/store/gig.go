@@ -36,7 +36,7 @@ func (s *GigStore) CreateGig(ctx context.Context, gig *Gig) error {
 
 	err = tx.QueryRowContext(ctx, `
 		INSERT INTO gigs (userid, title, amount, description, expertise, discipline)
-		VALUES ($1, $2, $3, $4, $5)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id, created_at, updated_at`,
 		gig.Userid, gig.Title, gig.Amount, gig.Description, gig.Expertise, pq.Array(gig.Discipline)).
 		Scan(&gig.ID, &gig.CreatedAt, &gig.UpdatedAt)

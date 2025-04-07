@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MentorHeader } from '../components/mentor/MentorHeader';
 import { Footer } from '../components/Footer';
 import axios from 'axios';
+import { API_URL } from '../App';
 
 // Types remain unchanged
 interface User {
@@ -86,7 +87,7 @@ export const ProfilePage = () => {
   
         const config = { headers: { Authorization: `Bearer ${token}` } };
         const paidResponse = await axios.get(
-          `http://localhost:8080/v1/meetings/user-not-completed/${userId}`,
+          `${API_URL}/meetings/user-not-completed/${userId}`,
           config
         );
         let paidData = Array.isArray(paidResponse.data.data)
@@ -113,7 +114,7 @@ export const ProfilePage = () => {
   
         const config = { headers: { Authorization: `Bearer ${token}` } };
         const mentorPaidResponse = await axios.get(
-          `http://localhost:8080/v1/meetings/mentor-not-completed/${userId}`,
+          `${API_URL}/meetings/mentor-not-completed/${userId}`,
           config
         );
         let mentorPaidData = Array.isArray(mentorPaidResponse.data.data)
@@ -149,14 +150,14 @@ export const ProfilePage = () => {
 
         try {
           const menteeResponse = await axios.get(
-            `http://localhost:8080/v1/users/${userIdToFetch}`,
+            `${API_URL}/users/${userIdToFetch}`,
             config
           );
           updatedMeeting.menteeName = menteeResponse.data.data.username;
 
           if (mentorIdToFetch !== userId) {
             const mentorResponse = await axios.get(
-              `http://localhost:8080/v1/users/${mentorIdToFetch}`,
+              `${API_URL}/users/${mentorIdToFetch}`,
               config
             );
             updatedMeeting.mentorName = mentorResponse.data.data.username;
@@ -205,7 +206,7 @@ export const ProfilePage = () => {
       };
 
       const response = await axios.post(
-        `http://localhost:8080/v1/payment/create-checkout-session`,
+        `${API_URL}/payment/create-checkout-session`,
         paymentData,
         config
       );
@@ -231,11 +232,11 @@ export const ProfilePage = () => {
         if (!token || !userId) throw new Error('Authentication required');
         
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        const userResponse = await axios.get(`http://localhost:8080/v1/users/${userId}`, config);
+        const userResponse = await axios.get(`${API_URL}/users/${userId}`, config);
         setUser(userResponse.data.data);
 
         const meetingsResponse = await axios.get(
-          `http://localhost:8080/v1/meetings/mentor-not-confirm/${userId}`,
+          `${API_URL}/meetings/mentor-not-confirm/${userId}`,
           config
         );
         let meetingsData = Array.isArray(meetingsResponse.data.data)
@@ -262,7 +263,7 @@ export const ProfilePage = () => {
 
         const config = { headers: { Authorization: `Bearer ${token}` } };
         const unpaidResponse = await axios.get(
-          `http://localhost:8080/v1/meetings/user-not-paid/${userId}`,
+          `${API_URL}/meetings/user-not-paid/${userId}`,
           config
         );
         let unpaidData = Array.isArray(unpaidResponse.data.data)
@@ -285,7 +286,7 @@ export const ProfilePage = () => {
     try {
       if (!token) throw new Error('No authentication token found');
       const config = { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } };
-      await axios.put(`http://localhost:8080/v1/meetings/confirm/${meetingId}`, {}, config);
+      await axios.put(`${API_URL}/meetings/confirm/${meetingId}`, {}, config);
       setMeetings(meetings.filter(meeting => meeting.id !== meetingId));
     } catch (err: any) {
       setError(err.message || 'Failed to confirm meeting');
@@ -296,6 +297,7 @@ export const ProfilePage = () => {
   const formatDate = (dateString: string) => dateString;
 
   return (
+    <div>
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <MentorHeader />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -482,7 +484,8 @@ export const ProfilePage = () => {
           )}
         </div>
       </main>
-      <Footer />
     </div>
+    <Footer />
+  </div>
   );
 };

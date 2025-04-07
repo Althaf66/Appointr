@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Code2, ShieldPlus, Scale, Tractor, GraduationCap, Award, HeartHandshake, HeartPulse, Handshake, Gem } from 'lucide-react';
 import { Mentor } from '../types';
+import { API_URL } from '../App';
 
 const iconMap = {
   Code2,
@@ -80,7 +81,7 @@ export const DomainTabs: React.FC<DomainTabsProps> = ({ onMentorsUpdate }) => {
     const fetchDomains = async () => {
       try {
         const response = await axios.get(
-          'http://localhost:8080/v1/expertise',
+          `${API_URL}/expertise`,
           getAxiosConfig()
         );
         setDomains(response.data.data || []);
@@ -106,7 +107,7 @@ export const DomainTabs: React.FC<DomainTabsProps> = ({ onMentorsUpdate }) => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:8080/v1/discipline/${selectedDomain}`,
+          `${API_URL}/discipline/${selectedDomain}`,
           getAxiosConfig()
         );
         setSubfields(response.data.data || []);
@@ -132,7 +133,7 @@ export const DomainTabs: React.FC<DomainTabsProps> = ({ onMentorsUpdate }) => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:8080/v1/mentors/exp/${expertise}`,
+        `${API_URL}/mentors/exp/${expertise}`,
         getAxiosConfig()
       );
       const mentors = response.data.data || [];
@@ -152,7 +153,7 @@ export const DomainTabs: React.FC<DomainTabsProps> = ({ onMentorsUpdate }) => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:8080/v1/mentors/dis/${discipline}`,
+        `${API_URL}/mentors/dis/${discipline}`,
         getAxiosConfig()
       );
       const mentors = response.data.data || [];

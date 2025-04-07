@@ -34,7 +34,7 @@ export const GigDetails = ({ onNext }: GigDetailsProps) => {
   useEffect(() => {
     const fetchExpertise = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/v1/expertise');
+        const response = await axios.get(`${API_URL}/expertise`);
         const expertiseData: Expertise[] = response.data.data;
         const expertiseNames = expertiseData.map(item => item.name);
         setExpertiseOptions(expertiseNames);
@@ -51,7 +51,7 @@ export const GigDetails = ({ onNext }: GigDetailsProps) => {
   useEffect(() => {
     const fetchDisciplines = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/v1/discipline');
+        const response = await axios.get(`${API_URL}/discipline`);
         const disciplineData: { data: Discipline[] } = response.data;
         setDisciplineOptions(disciplineData.data);
       } catch (err) {

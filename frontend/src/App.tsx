@@ -11,6 +11,8 @@ import  MessagesPage  from './pages/MessagesPage';
 import { ConfirmationPage } from './pages/ConfirmationPage';
 import { MentorCreationPage } from './pages/MentorCreationPage';
 import { BasicDetailsPage } from './pages/BasicDetails';
+import { Room } from './pages/Room';
+import { Meeting } from './pages/Meeting';
 
 export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/v1"
 
@@ -29,7 +31,9 @@ function App() {
           <Route path="/creatementor" element={<BasicDetailsPage />} />
           <Route path="/creategig" element={<MentorCreationPage />} />
           <Route path="/confirm/:token" element={<ConfirmationPage />} />
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/room/:roomId" element={<Room />} />
+          <Route path="/meeting" element={<Meeting />} />
+          <Route path="*" element={<Navigate to="/explore" />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

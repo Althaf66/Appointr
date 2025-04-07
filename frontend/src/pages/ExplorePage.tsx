@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navbar } from '../components/Navbar';
 import { DomainTabs } from '../components/DomainTabs';
-import { ExploreHeader } from '../components/explore/ExploreHeader';
 import { MentorCard } from '../components/MentorCard';
 import { Footer } from '../components/Footer';
 import axios from 'axios';
@@ -51,7 +50,7 @@ export const ExplorePage = () => {
     <div className="flex flex-col h-screen">
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Navbar />
-      <ExploreHeader />
+      {/* <ExploreHeader /> */}
       <DomainTabs 
         onMentorsUpdate={updateMentors} 
       />

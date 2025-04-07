@@ -16,6 +16,7 @@ import {
   Linkedin,
   Instagram
 } from 'lucide-react';
+import { API_URL } from '../App';
 
 interface MentorDetails {
   id: string;
@@ -62,7 +63,7 @@ export const MentorDetails: React.FC = () => {
       }
 
       const response = await axios.post(
-        'http://localhost:8080/v1/messages/conversations',
+        `${API_URL}/messages/conversations`,
         {
           other_user_id: mentor.userid
         },
@@ -82,7 +83,7 @@ export const MentorDetails: React.FC = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:8080/v1/mentors/u/${id}`,
+          `${API_URL}/mentors/u/${id}`,
           getAxiosConfig()
         );
         console.log('API response:', response.data.data);
@@ -227,7 +228,7 @@ export const MentorDetails: React.FC = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:8080/v1/meetings/create',
+        `${API_URL}/meetings/create`,
         bookingData,
         getAxiosConfig()
       );

@@ -13,8 +13,6 @@ import (
 	"github.com/Althaf66/Appointr/internal/store"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	// "golang.org/x/oauth2"
-	// "golang.org/x/oauth2/google"
 )
 
 type RegisterUserPayload struct {
@@ -22,14 +20,6 @@ type RegisterUserPayload struct {
 	Email    string `json:"email" validate:"required,email,max=255"`
 	Password string `json:"password" validate:"required,min=3,max=72"`
 }
-
-// var googleOauthConfig = &oauth2.Config{
-// 	ClientID:     "28963359750-r8cv93ou5hi4ddg9i4prkc4pl1376895.apps.googleusercontent.com",
-// 	ClientSecret: "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",
-// 	RedirectURL:  "http://localhost:8080/auth/google/callback",
-// 	Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
-// 	Endpoint:     google.Endpoint,
-// }
 
 type UserWithToken struct {
 	*store.User

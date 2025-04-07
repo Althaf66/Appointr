@@ -99,6 +99,17 @@ func (app *application) mount() *chi.Mux {
 		r.Get("/messages/{conversationID}", app.HandleWebSocket(app.wsManager))
 	})
 
+	r.Route("/video",func(r chi.Router) {
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("Video Meeting API"))
+		})
+		r.Post("/create-room", createRoomHandler)
+		r.Post("/join-room/{roomID}", joinRoomHandler)
+		r.Post("/signal", signalHandler)
+		r.Get("/room-status/{roomID}", roomStatusHandler)
+    	r.Get("/pending-signals/{roomID}/{userID}", pendingSignalsHandler)
+	})
+
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/health", app.healthcheckHandler)
 		r.With(app.BasicAuthMiddleware()).Get("/debug/vars", expvar.Handler().ServeHTTP)

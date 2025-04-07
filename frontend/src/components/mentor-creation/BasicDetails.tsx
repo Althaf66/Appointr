@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ChevronRight } from 'lucide-react';
+import { API_URL } from '../../App';
 
 interface BasicDetailsProps {
   onNext: () => void;
 }
-
-const API_URL = 'http://localhost:8080/v1';
 
 export const BasicDetails = ({ onNext }: BasicDetailsProps) => {
   const [formData, setFormData] = useState({

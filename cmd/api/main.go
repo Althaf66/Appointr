@@ -3,15 +3,17 @@ package main
 import (
 	"expvar"
 	"log"
+	"os"
 	"runtime"
 	"time"
 
 	"github.com/Althaf66/Appointr/internal/auth"
 	"github.com/Althaf66/Appointr/internal/db"
-	"github.com/Althaf66/Appointr/internal/env"
+	// "github.com/Althaf66/Appointr/internal/env"
 	"github.com/Althaf66/Appointr/internal/mailer"
 	"github.com/Althaf66/Appointr/internal/store"
 	"github.com/Althaf66/Appointr/internal/websocket"
+	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
 
@@ -36,38 +38,39 @@ const version = "1.0.0"
 // @name						Authorization
 // @description
 func main() {
+	godotenv.Load()
 	cfg := config{
-		addr:        env.GetString("ADDR", ":8080"),
-		apiUrl:      env.GetString("EXTERNAL_URL", "localhost:8080"),
-		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:5173"),
-		env:         env.GetString("ENV", "development"),
+		addr:        os.Getenv("ADDR"),
+		apiUrl:      os.Getenv("EXTERNAL_URL"),
+		frontendURL: os.Getenv("FRONTEND_URL"),
+		env:         os.Getenv("ENV"),
 		db: dbConfig{
-			addr:         env.GetString("DB_ADDR", "postgres://admin:adminpassword@localhost/appointr?sslmode=disable"),
-			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 30),
-			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONNS", 30),
-			maxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "15m"),
+			addr:         os.Getenv("DB_ADDR"),
+			maxOpenConns: 30,
+			maxIdleConns: 30,
+			maxIdleTime:  os.Getenv("DB_MAX_IDLE_TIME"),
 		},
 		mail: mailconfig{
 			exp:       time.Hour * 24 * 3,
-			fromEmail: env.GetString("FROM_EMAIL", "althafas@althafasharaf.in"),
+			fromEmail: os.Getenv("FROM_EMAIL"),
 			mailTrap: mailTrapConfig{
-				apiKey: env.GetString("MAILTRAP_API_KEY", "b1baf93cac0045d35b7f2299c2398d1a"),
+				apiKey: os.Getenv("MAILTRAP_API_KEY"),
 			},
 		},
 
 		auth: authConfig{
 			basic: basicConfig{
-				username: env.GetString("AUTH_BASIC_USER", "admin"),
-				password: env.GetString("AUTH_BASIC_PASS", "admin"),
+				username: os.Getenv("AUTH_BASIC_USER"),
+				password: os.Getenv("AUTH_BASIC_PASS"),
 			},
 			token: tokenConfig{
-				secret: env.GetString("AUTH_TOKEN_SECRET", "unknown"),
+				secret: os.Getenv("AUTH_TOKEN_SECRET"),
 				exp:    time.Hour * 24 * 3,
 				iss:    "appointr",
 			},
 		},
-		stripeKey:     env.GetString("STRIPE_KEY", "sk_test_51NpubpSF2Iapc3CYMensOJgnQjo4anfwi9MNLOFIjNkOBYRxzEP8gMctadHwISPfAERy31iKNejTs50cRCu1bCxV00NycUfZ06"),
-		stripeWebhook: env.GetString("STRIPE_WEBHOOK", "whsec_5048a44b5392d726f42c8c6ed46045c2f062db8d551ed0dd1ff239c4bcbdf26d"),
+		stripeKey:     os.Getenv("STRIPE_KEY"),
+		stripeWebhook: os.Getenv("STRIPE_WEBHOOK"),
 	}
 
 	// logger
