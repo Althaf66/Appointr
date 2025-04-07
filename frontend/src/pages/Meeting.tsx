@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { API_URL } from '../App';
 
 export const Meeting = () => {
   const [roomId, setRoomId] = useState('');
@@ -13,7 +14,7 @@ export const Meeting = () => {
     const userId = 'user-' + Math.random().toString(36).substring(2, 7);
     
     try {
-      const response = await fetch('http://localhost:8080/video/create-room', {
+      const response = await fetch(`${API_URL}/video/create-room`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

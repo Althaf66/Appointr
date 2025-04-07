@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { API_URL } from '../App';
 
 export const Room = () => {
     const { roomId } = useParams<{ roomId: string }>();
@@ -34,7 +35,7 @@ export const Room = () => {
           localStorage.setItem('userId', userId);
   
           // Try to join the room first
-          const joinResponse = await fetch(`http://localhost:8080/video/join-room/${roomId}`, {
+          const joinResponse = await fetch(`${API_URL}/video/join-room/${roomId}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -50,7 +51,7 @@ export const Room = () => {
             setIsConnected(true);
           } else if (joinResponse.status === 404) {
             // Room doesn't exist, create it
-            const createResponse = await fetch('http://localhost:8080/video/create-room', {
+            const createResponse = await fetch(`${API_URL}/video/create-room`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -98,7 +99,7 @@ export const Room = () => {
       // In a real implementation, you would use WebSockets instead of polling
       const intervalId = setInterval(async () => {
         try {
-          const response = await fetch(`http://localhost:8080/video/room-status/${roomId}`, {
+          const response = await fetch(`${API_URL}/video/room-status/${roomId}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -160,7 +161,7 @@ export const Room = () => {
         if (event.candidate && remotePeerId) {
           // Send ICE candidate to the server
           try {
-            await fetch('http://localhost:8080/video/signal', {
+            await fetch(`${API_URL}/video/signal`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -200,7 +201,7 @@ export const Room = () => {
     const startPollingForSignals = (userId: string, otherPeerId: string) => {
       const pollInterval = setInterval(async () => {
         try {
-          const response = await fetch(`http://localhost:8080/video/pending-signals/${roomId}/${userId}`, {
+          const response = await fetch(`${API_URL}/video/pending-signals/${roomId}/${userId}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -248,7 +249,7 @@ export const Room = () => {
         await peerConnectionRef.current.setLocalDescription(answer);
 
         // Send the answer back
-        await fetch('http://localhost:8080/video/signal', {
+        await fetch(`${API_URL}/video/signal`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -274,7 +275,7 @@ export const Room = () => {
         await peerConnectionRef.current.setLocalDescription(offer);
   
         // Send the offer to the server
-        await fetch('http://localhost:8080/video/signal', {
+        await fetch(`${API_URL}/video/signal`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -291,7 +292,7 @@ export const Room = () => {
         // After sending the offer, start polling for the answer
         const checkForAnswer = async () => {
           try {
-            const response = await fetch(`http://localhost:8080/video/pending-signals/${roomId}/${userId}`, {
+            const response = await fetch(`${API_URL}/video/pending-signals/${roomId}/${userId}`, {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
