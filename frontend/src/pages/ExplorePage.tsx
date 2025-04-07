@@ -48,6 +48,7 @@ export const ExplorePage = () => {
   }, []);
 
   return (
+    <div className="flex flex-col h-screen">
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Navbar />
       <ExploreHeader />
@@ -131,7 +132,7 @@ export const ExplorePage = () => {
           </div>
         </div>
       </div>
-      
+      </div>
       <Footer />
     </div>
   );
