@@ -223,6 +223,39 @@ func (app *application) getMeetingUserNotCompletedHandler(w http.ResponseWriter,
 	}
 }
 
+// getMeetingMentorNotCompletedHandler godoc
+//
+//	@Summary		Get uncompleted meetings by mentor ID
+//	@Description	Get meetings where iscompleted is false but confirmed and paid for a specific mentor
+//	@Tags			meetings
+//	@Accept			json
+//	@Produce		json
+//	@Param			mentorID	path		int64	true	"Mentor ID"
+//	@Success		200			{object}	[]store.Meetings
+//	@Failure		400			{object}	error
+//	@Failure		401			{object}	error
+//	@Failure		500			{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/meetings/mentor-not-completed/{mentorID} [get]
+func (app *application) getMeetingMentorNotCompletedHandler(w http.ResponseWriter, r *http.Request) {
+	mentorID, err := strconv.ParseInt(chi.URLParam(r, "mentorID"), 10, 64)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	meetings, err := app.store.Meetings.GetMeetingMentorNotCompleted(r.Context(), mentorID)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	err = JsonResponse(w, http.StatusOK, meetings)
+	if err != nil {
+		app.internalServerError(w, r, err)
+	}
+}
+
 // updateMeetingConfirmHandler godoc
 //
 //	@Summary		Confirm a meeting

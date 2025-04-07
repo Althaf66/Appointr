@@ -96,6 +96,7 @@ type Storage struct {
 		GetMeetingMentorNotConfirm(ctx context.Context, mentorID int64) ([]*Meetings, error)
 		GetMeetingUserNotPaid(ctx context.Context, userID int64) ([]*Meetings, error)
 		GetMeetingUserNotCompleted(ctx context.Context, userID int64) ([]*Meetings, error)
+		GetMeetingMentorNotCompleted(ctx context.Context, mentorID int64) ([]*Meetings, error)
 		UpdateMeetingConfirm(ctx context.Context, meetingID int64) error
 		UpdateMeetingPaid(ctx context.Context, meetingID int64) error
 		UpdateMeetingCompleted(ctx context.Context, meetingID int64) error

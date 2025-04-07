@@ -1630,6 +1630,41 @@ paths:
       summary: Create a new meeting
       tags:
       - meetings
+  /meetings/mentor-not-completed/{mentorID}:
+    get:
+      consumes:
+      - application/json
+      description: Get meetings where iscompleted is false but confirmed and paid
+        for a specific mentor
+      parameters:
+      - description: Mentor ID
+        in: path
+        name: mentorID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.Meetings'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get uncompleted meetings by mentor ID
+      tags:
+      - meetings
   /meetings/mentor-not-confirm/{mentorID}:
     get:
       consumes:

@@ -36,6 +36,12 @@ export const ProfilePage = () => {
   const [unpaidLoading, setUnpaidLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [unpaidError, setUnpaidError] = useState<string | null>(null);
+  const [paidMeetings, setPaidMeetings] = useState<Meeting[]>([]);
+  const [paidLoading, setPaidLoading] = useState(true);
+  const [paidError, setPaidError] = useState<string | null>(null);
+  const [mentorPaidMeetings, setMentorPaidMeetings] = useState<Meeting[]>([]);
+  const [mentorPaidLoading, setMentorPaidLoading] = useState(true);
+  const [mentorPaidError, setMentorPaidError] = useState<string | null>(null);
 
   const token = localStorage.getItem('token');
 
@@ -71,6 +77,60 @@ export const ProfilePage = () => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
   }, [token]);
+
+  useEffect(() => {
+    const fetchPaidMeetings = async () => {
+      try {
+        setPaidLoading(true);
+        if (!token || !userId) throw new Error('Authentication required');
+  
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const paidResponse = await axios.get(
+          `http://localhost:8080/v1/meetings/user-not-completed/${userId}`,
+          config
+        );
+        let paidData = Array.isArray(paidResponse.data.data)
+          ? paidResponse.data.data
+          : paidResponse.data.data ? [paidResponse.data.data] : [];
+        const paidWithNames = await fetchUserNames(paidData);
+        setPaidMeetings(paidWithNames);
+  
+      } catch (err: any) {
+        setPaidError(err.message || 'An error occurred while fetching paid sessions');
+        console.error('Error fetching paid meetings:', err);
+      } finally {
+        setPaidLoading(false);
+      }
+    };
+    fetchPaidMeetings();
+  }, [token, userId]);
+
+  useEffect(() => {
+    const fetchMentorPaidMeetings = async () => {
+      try {
+        setMentorPaidLoading(true);
+        if (!token || !userId) throw new Error('Authentication required');
+  
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const mentorPaidResponse = await axios.get(
+          `http://localhost:8080/v1/meetings/mentor-not-completed/${userId}`,
+          config
+        );
+        let mentorPaidData = Array.isArray(mentorPaidResponse.data.data)
+          ? mentorPaidResponse.data.data
+          : mentorPaidResponse.data.data ? [mentorPaidResponse.data.data] : [];
+        const mentorPaidWithNames = await fetchUserNames(mentorPaidData);
+        setMentorPaidMeetings(mentorPaidWithNames);
+  
+      } catch (err: any) {
+        setMentorPaidError(err.message || 'An error occurred while fetching mentor paid sessions');
+        console.error('Error fetching mentor paid meetings:', err);
+      } finally {
+        setMentorPaidLoading(false);
+      }
+    };
+    fetchMentorPaidMeetings();
+  }, [token, userId]);
 
   const fetchUserNames = async (meetingsData: Meeting[]): Promise<Meeting[]> => {
     if (!token || !meetingsData.length) return meetingsData;
@@ -140,7 +200,8 @@ export const ProfilePage = () => {
         currency: 'inr',
         email: user.email,
         menteeName: meeting.menteeName,
-        mentorName: meeting.mentorName
+        mentorName: meeting.mentorName,
+        id: meeting.id,
       };
 
       const response = await axios.post(
@@ -253,83 +314,172 @@ export const ProfilePage = () => {
               </div>
             </div>
           )}
-
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Sessions Ready for Payment</h3>
-            </div>
-            {unpaidLoading ? (
-              <div className="p-6 text-center"><p className="text-gray-500 dark:text-gray-400">Loading payment-ready sessions...</p></div>
-            ) : unpaidError ? (
-              <div className="p-6 text-center"><p className="text-red-500">{unpaidError}</p></div>
-            ) : !unpaidMeetings || unpaidMeetings.length === 0 ? (
-              <div className="p-6 text-center"><p className="text-gray-500 dark:text-gray-400">No payment-ready sessions</p></div>
-            ) : (
-              <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                {unpaidMeetings.map((meeting) => (
-                  <div key={meeting.id} className="p-6">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white">{meeting.day} - {formatDate(meeting.date)}</h4>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Time: {meeting.start_time} {meeting.start_period}</p>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Mentor: {meeting.mentorName || `Mentor #${meeting.mentorid}`}</p>
-                        <div className="mt-2">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-green-100 text-green-800">Mentor Confirmed</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <p className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">₹{meeting.amount}</p> {/* Changed to INR symbol */}
-                        <button
-                          onClick={() => handlePayment(meeting.id)}
-                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                        >
-                          Pay Now
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+  
+          {/* Sessions Ready for Payment - Only show if there are meetings after loading */}
+          {!unpaidLoading && unpaidMeetings && unpaidMeetings.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+              <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Sessions Ready for Payment</h3>
               </div>
-            )}
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Upcoming Sessions</h3>
-            </div>
-            {loading ? (
-              <div className="p-6 text-center"><p className="text-gray-500 dark:text-gray-400">Loading sessions...</p></div>
-            ) : error ? (
-              <div className="p-6 text-center"><p className="text-red-500">{error}</p></div>
-            ) : !meetings || meetings.length === 0 ? (
-              <div className="p-6 text-center"><p className="text-gray-500 dark:text-gray-400">No upcoming sessions</p></div>
-            ) : (
-              <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                {meetings.map((meeting) => (
-                  <div key={meeting.id} className="p-6">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white">{meeting.day} - {formatDate(meeting.date)}</h4>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Time: {meeting.start_time} {meeting.start_period}</p>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Client Name: {meeting.menteeName || `User #${meeting.userid}`}</p>
-                      </div>
-                      <div className="flex justify-end">
-                        <div className="text-center">
-                          <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">Are you ready to confirm?</p>
+              {unpaidLoading ? (
+                <div className="p-6 text-center"><p className="text-gray-500 dark:text-gray-400">Loading payment-ready sessions...</p></div>
+              ) : unpaidError ? (
+                <div className="p-6 text-center"><p className="text-red-500">{unpaidError}</p></div>
+              ) : (
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {unpaidMeetings.map((meeting) => (
+                    <div key={meeting.id} className="p-6">
+                      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                        <div>
+                          <h4 className="font-medium text-gray-900 dark:text-white">{meeting.day} - {formatDate(meeting.date)}</h4>
+                          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Time: {meeting.start_time} {meeting.start_period}</p>
+                          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Mentor: {meeting.mentorName || `Mentor #${meeting.mentorid}`}</p>
+                          <div className="mt-2">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-green-100 text-green-800">Mentor Confirmed</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <p className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">₹{meeting.amount}</p>
                           <button
-                            onClick={() => handleConfirmMeeting(meeting.id)}
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onClick={() => handlePayment(meeting.id)}
+                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                           >
-                            Confirm Session
+                            Pay Now
                           </button>
                         </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+  
+          {/* Paid Sessions - Only show if there are meetings after loading */}
+          {!paidLoading && paidMeetings && paidMeetings.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+              <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Paid Sessions</h3>
+              </div>
+              {paidLoading ? (
+                <div className="p-6 text-center"><p className="text-gray-500 dark:text-gray-400">Loading paid sessions...</p></div>
+              ) : paidError ? (
+                <div className="p-6 text-center"><p className="text-red-500">{paidError}</p></div>
+              ) : (
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {paidMeetings.map((meeting) => (
+                    <div key={meeting.id} className="p-6">
+                      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                        <div>
+                          <h4 className="font-medium text-gray-900 dark:text-white">{meeting.day} - {formatDate(meeting.date)}</h4>
+                          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Time: {meeting.start_time} {meeting.start_period}</p>
+                          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Mentor: {meeting.mentorName || `Mentor #${meeting.mentorid}`}</p>
+                          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Amount: ₹{meeting.amount}</p>
+                          {meeting.link && (
+                            <a 
+                              href={meeting.link} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="mt-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600"
+                            >
+                              Meeting Link
+                            </a>
+                          )}
+                        </div>
+                        <div className="flex items-center">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-green-100 text-green-800">
+                            Paid
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+        {!mentorPaidLoading && mentorPaidMeetings && mentorPaidMeetings.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Upcoming Sessions</h3>
+            </div>
+            {mentorPaidLoading ? (
+              <div className="p-6 text-center"><p className="text-gray-500 dark:text-gray-400">Loading mentor paid sessions...</p></div>
+            ) : mentorPaidError ? (
+              <div className="p-6 text-center"><p className="text-red-500">{mentorPaidError}</p></div>
+            ) : (
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                {mentorPaidMeetings.map((meeting) => (
+                  <div key={meeting.id} className="p-6">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-white">{meeting.day} - {formatDate(meeting.date)}</h4>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Time: {meeting.start_time} {meeting.start_period}</p>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Mentee: {meeting.menteeName || `User #${meeting.userid}`}</p>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Amount: ₹{meeting.amount}</p>
+                        {meeting.link && (
+                          <a 
+                            href={meeting.link} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="mt-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600"
+                          >
+                            Meeting Link
+                          </a>
+                        )}
+                      </div>
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-green-100 text-green-800">
+                          Paid
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
+        )}
+  
+          {/* Upcoming Sessions - Only show if there are meetings after loading */}
+          {!loading && meetings && meetings.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+              <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Need Confirmation</h3>
+              </div>
+              {loading ? (
+                <div className="p-6 text-center"><p className="text-gray-500 dark:text-gray-400">Loading sessions...</p></div>
+              ) : error ? (
+                <div className="p-6 text-center"><p className="text-red-500">{error}</p></div>
+              ) : (
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {meetings.map((meeting) => (
+                    <div key={meeting.id} className="p-6">
+                      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                        <div>
+                          <h4 className="font-medium text-gray-900 dark:text-white">{meeting.day} - {formatDate(meeting.date)}</h4>
+                          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Time: {meeting.start_time} {meeting.start_period}</p>
+                          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Client Name: {meeting.menteeName || `User #${meeting.userid}`}</p>
+                        </div>
+                        <div className="flex justify-end">
+                          <div className="text-center">
+                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">Are you ready to confirm?</p>
+                            <button
+                              onClick={() => handleConfirmMeeting(meeting.id)}
+                              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              Confirm Session
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
       <Footer />

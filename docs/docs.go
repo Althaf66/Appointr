@@ -1622,6 +1622,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/meetings/mentor-not-completed/{mentorID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get meetings where iscompleted is false but confirmed and paid for a specific mentor",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "meetings"
+                ],
+                "summary": "Get uncompleted meetings by mentor ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Mentor ID",
+                        "name": "mentorID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.Meetings"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/meetings/mentor-not-confirm/{mentorID}": {
             "get": {
                 "security": [

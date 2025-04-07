@@ -229,6 +229,37 @@ func (s *MeetingsStore) GetMeetingUserNotCompleted(ctx context.Context, userID i
 	return meetings, nil
 }
 
+func (s *MeetingsStore) GetMeetingMentorNotCompleted(ctx context.Context, mentorID int64) ([]*Meetings, error) {
+	query := `
+		SELECT id, userid, mentorid, day, date, start_time, start_period, isconfirm, ispaid, iscompleted, amount, link
+		FROM meetings
+		WHERE mentorid = $1 AND isconfirm = true AND ispaid = true AND iscompleted = false`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeOutDuration)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, query, mentorID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	meetings := []*Meetings{}
+	for rows.Next() {
+		meeting := &Meetings{}
+		err := rows.Scan(
+			&meeting.ID, &meeting.Userid, &meeting.Mentorid, &meeting.Day, &meeting.Date,
+			&meeting.StartTime, &meeting.StartPeriod, &meeting.Isconfirm, &meeting.Ispaid,
+			&meeting.Iscompleted, &meeting.Amount, &meeting.Link,
+		)
+		if err != nil {
+			return nil, err
+		}
+		meetings = append(meetings, meeting)
+	}
+
+	return meetings, nil
+}
+
 func (s *MeetingsStore) UpdateMeetingConfirm(ctx context.Context, meetingID int64) error {
 	query := `
 		UPDATE meetings 

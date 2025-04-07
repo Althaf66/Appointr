@@ -221,6 +221,7 @@ func (app *application) mount() *chi.Mux {
 			r.Get("/mentor-not-confirm/{mentorID}", app.getMeetingMentorNotConfirmHandler)
 			r.Get("/user-not-paid/{userID}", app.getMeetingUserNotPaidHandler)
 			r.Get("/user-not-completed/{userID}", app.getMeetingUserNotCompletedHandler)
+			r.Get("/mentor-not-completed/{mentorID}", app.getMeetingMentorNotCompletedHandler)
 			r.Put("/confirm/{meetingID}", app.updateMeetingConfirmHandler)
 			r.Put("/completed/{meetingID}", app.updateMeetingCompletedHandler)
 			r.Delete("/{meetingID}", app.deleteMeetingHandler)

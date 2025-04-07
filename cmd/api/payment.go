@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/stripe/stripe-go/v82"
-	"github.com/stripe/stripe-go/v82/checkout/session"
-	"github.com/stripe/stripe-go/v82/webhook"
+	"github.com/stripe/stripe-go/v75"
+	"github.com/stripe/stripe-go/v75/checkout/session"
+	"github.com/stripe/stripe-go/v75/webhook"
 )
 
 func (app *application) createCheckoutSession(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +19,7 @@ func (app *application) createCheckoutSession(w http.ResponseWriter, r *http.Req
 		Email      string  `json:"email"`
 		MenteeName string  `json:"menteeName"`
 		MentorName string  `json:"mentorName"`
-		MentorID   int     `json:"mentorId"`
+		ID  	int     `json:"id"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&paymentData); err != nil {
@@ -58,7 +58,7 @@ func (app *application) createCheckoutSession(w http.ResponseWriter, r *http.Req
 		SuccessURL: stripe.String(domain + "?success=true"),
 		CancelURL:  stripe.String(domain + "?canceled=true"),
 		Metadata: map[string]string{
-			"mentorId": strconv.Itoa(paymentData.MentorID),
+			"meetingid": strconv.Itoa(paymentData.ID),
 		},
 	}
 
@@ -104,15 +104,15 @@ func (app *application) handleWebhook(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Extract mentorId from metadata
-		mentorID, ok := checkoutSession.Metadata["mentorId"]
+		meetingID, ok := checkoutSession.Metadata["meetingid"]
 		if !ok {
 			log.Printf("mentorId not found in metadata")
 			http.Error(w, "mentorId not found", http.StatusInternalServerError)
 			return
 		}
-
+		log.Println("meetingid",meetingID)
 		// Call the API to mark the meeting as paid using PUT method
-		apiURL := "http://localhost:8080/v1/meetings/paid/" + mentorID
+		apiURL := "http://localhost:8080/v1/meetings/paid/" + meetingID
 		req, err := http.NewRequest(http.MethodPut, apiURL, nil)
 		if err != nil {
 			log.Printf("Failed to create PUT request: %v", err)
@@ -130,12 +130,12 @@ func (app *application) handleWebhook(w http.ResponseWriter, r *http.Request) {
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			log.Printf("Paid API returned non-OK status: %v", resp.Status)
+			log.Printf("returned non-OK status: %v", resp.Status)
 			http.Error(w, "Failed to update payment status", http.StatusInternalServerError)
 			return
 		}
 
-		log.Printf("Successfully marked meeting as paid for mentorId: %s", mentorID)
+		log.Printf("Successfully marked meeting as paid for mentorId: %s", meetingID)
 	}
 
 	w.WriteHeader(http.StatusOK)
