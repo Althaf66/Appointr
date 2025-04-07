@@ -13,7 +13,7 @@ import (
 
 	"github.com/Althaf66/Appointr/docs"
 	"github.com/Althaf66/Appointr/internal/auth"
-	"github.com/Althaf66/Appointr/internal/env"
+	// "github.com/Althaf66/Appointr/internal/env"
 	"github.com/Althaf66/Appointr/internal/mailer"
 	"github.com/Althaf66/Appointr/internal/store"
 	"github.com/Althaf66/Appointr/internal/websocket"
@@ -86,7 +86,7 @@ func (app *application) mount() *chi.Mux {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.RequestID)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{env.GetString("CORS_ALLOWED_ORIGIN", "http://localhost:5173")},
+		AllowedOrigins:   []string{os.Getenv("CORS_ALLOWED_ORIGIN")},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},

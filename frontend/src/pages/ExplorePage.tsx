@@ -18,7 +18,6 @@ export const ExplorePage = () => {
     return localStorage.getItem('token');
   };
 
-  // Configure axios with authentication headers
   const getAxiosConfig = () => {
     const token = getAuthToken();
     return {
