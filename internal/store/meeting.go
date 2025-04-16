@@ -350,6 +350,36 @@ func (s *MeetingsStore) UpdateMeetingCompleted(ctx context.Context, meetingID in
 	return tx.Commit()
 }
 
+func (s *MeetingsStore) UpdateLink(ctx context.Context, meeting *Meetings) error {
+	query := `
+		UPDATE meetings 
+		SET link = $1
+		WHERE id = $2`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeOutDuration)
+	defer cancel()
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	result, err := tx.ExecContext(ctx, query, meeting.Link, meeting.ID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
+	return tx.Commit()
+}
+
 func (s *MeetingsStore) DeleteMeeting(ctx context.Context, meetingID int64) error {
 	query := `
 		DELETE FROM meetings 

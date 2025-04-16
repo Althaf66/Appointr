@@ -11,11 +11,11 @@ import (
 )
 
 type PeerConnection struct {
-	ID           string
-	PC           *webrtc.PeerConnection
-	DataChannel  *webrtc.DataChannel
-	RoomID       string
-	IsInitiator  bool
+	ID          string
+	PC          *webrtc.PeerConnection
+	DataChannel *webrtc.DataChannel
+	RoomID      string
+	IsInitiator bool
 }
 
 // Room represents a meeting room with participants
@@ -27,13 +27,13 @@ type Room struct {
 
 // SignalMessage represents a WebRTC signaling message
 type SignalMessage struct {
-    Type      string                 `json:"type"`
-    SDP       string                 `json:"sdp,omitempty"`
-    Candidate *webrtc.ICECandidateInit `json:"candidate,omitempty"`
-    UserID    string                 `json:"userId"`
-    RoomID    string                 `json:"roomId"`
-    To        string                 `json:"to,omitempty"`
-    From      string                 `json:"from,omitempty"` // Add this field
+	Type      string                   `json:"type"`
+	SDP       string                   `json:"sdp,omitempty"`
+	Candidate *webrtc.ICECandidateInit `json:"candidate,omitempty"`
+	UserID    string                   `json:"userId"`
+	RoomID    string                   `json:"roomId"`
+	To        string                   `json:"to,omitempty"`
+	From      string                   `json:"from,omitempty"` // Add this field
 }
 
 // Global state
@@ -119,49 +119,49 @@ func createRoomHandler(w http.ResponseWriter, r *http.Request) {
 
 func joinRoomHandler(w http.ResponseWriter, r *http.Request) {
 	roomID := chi.URLParam(r, "roomID")
-  
+
 	var joinRequest struct {
-	  UserID string `json:"userId"`
+		UserID string `json:"userId"`
 	}
-  
+
 	if err := json.NewDecoder(r.Body).Decode(&joinRequest); err != nil {
-	  http.Error(w, "Invalid request format: "+err.Error(), http.StatusBadRequest)
-	  return
+		http.Error(w, "Invalid request format: "+err.Error(), http.StatusBadRequest)
+		return
 	}
-  
+
 	roomLock.Lock()
 	defer roomLock.Unlock()
-  
+
 	room, exists := rooms[roomID]
 	if !exists {
-	  http.Error(w, "Room not found: "+roomID, http.StatusNotFound)
-	  return
+		http.Error(w, "Room not found: "+roomID, http.StatusNotFound)
+		return
 	}
-  
+
 	// Check if user is already in the room
 	if _, userExists := room.Connections[joinRequest.UserID]; userExists {
-	  // User is already in the room, return success with the other peer ID
-	  var otherPeerID string
-	  for id := range room.Connections {
-		if id != joinRequest.UserID {
-		  otherPeerID = id
-		  break
+		// User is already in the room, return success with the other peer ID
+		var otherPeerID string
+		for id := range room.Connections {
+			if id != joinRequest.UserID {
+				otherPeerID = id
+				break
+			}
 		}
-	  }
-	  
-	  w.Header().Set("Content-Type", "application/json")
-	  json.NewEncoder(w).Encode(map[string]string{
-		"roomId":      roomID,
-		"userId":      joinRequest.UserID,
-		"otherPeerId": otherPeerID,
-		"status":      "rejoined",
-	  })
-	  return
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"roomId":      roomID,
+			"userId":      joinRequest.UserID,
+			"otherPeerId": otherPeerID,
+			"status":      "rejoined",
+		})
+		return
 	}
-  
+
 	if len(room.Connections) >= 2 {
-	  http.Error(w, "Room is full (maximum 2 participants allowed)", http.StatusForbidden)
-	  return
+		http.Error(w, "Room is full (maximum 2 participants allowed)", http.StatusForbidden)
+		return
 	}
 
 	// Create peer connection for joining user
@@ -313,97 +313,97 @@ var pendingSignals = make(map[string][]SignalMessage)
 var pendingSignalsLock sync.Mutex
 
 func roomStatusHandler(w http.ResponseWriter, r *http.Request) {
-    roomID := chi.URLParam(r, "roomID")
+	roomID := chi.URLParam(r, "roomID")
 
-    roomLock.Lock()
-    defer roomLock.Unlock()
+	roomLock.Lock()
+	defer roomLock.Unlock()
 
-    room, exists := rooms[roomID]
-    if !exists {
-        http.Error(w, "Room not found", http.StatusNotFound)
-        return
-    }
+	room, exists := rooms[roomID]
+	if !exists {
+		http.Error(w, "Room not found", http.StatusNotFound)
+		return
+	}
 
-    // Get all connection IDs in the room
-    var connectionIDs []string
-    for id := range room.Connections {
-        connectionIDs = append(connectionIDs, id)
-    }
+	// Get all connection IDs in the room
+	var connectionIDs []string
+	for id := range room.Connections {
+		connectionIDs = append(connectionIDs, id)
+	}
 
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(map[string]interface{}{
-        "roomId": roomID,
-        "connections": connectionIDs,
-    })
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"roomId":      roomID,
+		"connections": connectionIDs,
+	})
 }
 
 func pendingSignalsHandler(w http.ResponseWriter, r *http.Request) {
-    roomID := chi.URLParam(r, "roomID")
-    userID := chi.URLParam(r, "userID")
+	roomID := chi.URLParam(r, "roomID")
+	userID := chi.URLParam(r, "userID")
 
-    pendingSignalsLock.Lock()
-    defer pendingSignalsLock.Unlock()
+	pendingSignalsLock.Lock()
+	defer pendingSignalsLock.Unlock()
 
-    // Get key for this room and user
-    key := roomID + "_" + userID
-    
-    // Get all pending signals for this user
-    signals := pendingSignals[key]
-    
-    // Clear the signals after retrieving them
-    delete(pendingSignals, key)
+	// Get key for this room and user
+	key := roomID + "_" + userID
 
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(signals)
+	// Get all pending signals for this user
+	signals := pendingSignals[key]
+
+	// Clear the signals after retrieving them
+	delete(pendingSignals, key)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(signals)
 }
 
 // Modify the signal handler to store signals for polling
 func signalHandler(w http.ResponseWriter, r *http.Request) {
-    var signal SignalMessage
-    if err := json.NewDecoder(r.Body).Decode(&signal); err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
+	var signal SignalMessage
+	if err := json.NewDecoder(r.Body).Decode(&signal); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-    roomLock.Lock()
-    room, exists := rooms[signal.RoomID]
-    roomLock.Unlock()
-    
-    if !exists {
-        http.Error(w, "Room not found", http.StatusNotFound)
-        return
-    }
+	roomLock.Lock()
+	room, exists := rooms[signal.RoomID]
+	roomLock.Unlock()
 
-    // Add the "from" field to the signal
-    signal.From = signal.UserID
+	if !exists {
+		http.Error(w, "Room not found", http.StatusNotFound)
+		return
+	}
 
-    // Process the signal based on its type
-    switch signal.Type {
-    case "offer":
-        // Store the offer for the recipient to poll
-        pendingSignalsLock.Lock()
-        key := signal.RoomID + "_" + signal.To
-        pendingSignals[key] = append(pendingSignals[key], signal)
-        pendingSignalsLock.Unlock()
-        
-        w.Header().Set("Content-Type", "application/json")
-        json.NewEncoder(w).Encode(map[string]string{"status": "offer_queued"})
-        
-    case "answer":
-        // For answers, we can respond directly since the initiator is waiting
-        handleAnswer(room, signal, w)
-        
-    case "candidate":
-        // Store the ICE candidate for the recipient to poll
-        pendingSignalsLock.Lock()
-        key := signal.RoomID + "_" + signal.To
-        pendingSignals[key] = append(pendingSignals[key], signal)
-        pendingSignalsLock.Unlock()
-        
-        w.Header().Set("Content-Type", "application/json")
-        json.NewEncoder(w).Encode(map[string]string{"status": "candidate_queued"})
-        
-    default:
-        http.Error(w, "Unknown signal type", http.StatusBadRequest)
-    }
+	// Add the "from" field to the signal
+	signal.From = signal.UserID
+
+	// Process the signal based on its type
+	switch signal.Type {
+	case "offer":
+		// Store the offer for the recipient to poll
+		pendingSignalsLock.Lock()
+		key := signal.RoomID + "_" + signal.To
+		pendingSignals[key] = append(pendingSignals[key], signal)
+		pendingSignalsLock.Unlock()
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"status": "offer_queued"})
+
+	case "answer":
+		// For answers, we can respond directly since the initiator is waiting
+		handleAnswer(room, signal, w)
+
+	case "candidate":
+		// Store the ICE candidate for the recipient to poll
+		pendingSignalsLock.Lock()
+		key := signal.RoomID + "_" + signal.To
+		pendingSignals[key] = append(pendingSignals[key], signal)
+		pendingSignalsLock.Unlock()
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"status": "candidate_queued"})
+
+	default:
+		http.Error(w, "Unknown signal type", http.StatusBadRequest)
+	}
 }

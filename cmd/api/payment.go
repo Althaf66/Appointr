@@ -19,7 +19,7 @@ func (app *application) createCheckoutSession(w http.ResponseWriter, r *http.Req
 		Email      string  `json:"email"`
 		MenteeName string  `json:"menteeName"`
 		MentorName string  `json:"mentorName"`
-		ID  	int     `json:"id"`
+		ID         int     `json:"id"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&paymentData); err != nil {
@@ -110,7 +110,7 @@ func (app *application) handleWebhook(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "mentorId not found", http.StatusInternalServerError)
 			return
 		}
-		log.Println("meetingid",meetingID)
+		log.Println("meetingid", meetingID)
 		// Call the API to mark the meeting as paid using PUT method
 		apiURL := "http://localhost:8080/v1/meetings/paid/" + meetingID
 		req, err := http.NewRequest(http.MethodPut, apiURL, nil)

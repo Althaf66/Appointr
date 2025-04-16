@@ -99,7 +99,7 @@ func (app *application) mount() *chi.Mux {
 		r.Get("/messages/{conversationID}", app.HandleWebSocket(app.wsManager))
 	})
 
-	r.Route("/video",func(r chi.Router) {
+	r.Route("/video", func(r chi.Router) {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("Video Meeting API"))
 		})
@@ -107,7 +107,7 @@ func (app *application) mount() *chi.Mux {
 		r.Post("/join-room/{roomID}", joinRoomHandler)
 		r.Post("/signal", signalHandler)
 		r.Get("/room-status/{roomID}", roomStatusHandler)
-    	r.Get("/pending-signals/{roomID}/{userID}", pendingSignalsHandler)
+		r.Get("/pending-signals/{roomID}/{userID}", pendingSignalsHandler)
 	})
 
 	r.Route("/v1", func(r chi.Router) {
@@ -124,6 +124,9 @@ func (app *application) mount() *chi.Mux {
 			r.Get("/{expertiseID}", app.getExpertiseHandlerByID)
 			r.Patch("/{expertiseID}", app.updateExpertiseHandler)
 			r.Delete("/{expertiseID}", app.deleteExpertiseHandler)
+		})
+		r.Route("/countries", func(r chi.Router) {
+			r.Get("/", app.getCountryHandler)
 		})
 		r.Route("/discipline", func(r chi.Router) {
 			r.Get("/", app.getDisciplineHandler)
@@ -235,6 +238,7 @@ func (app *application) mount() *chi.Mux {
 			r.Get("/mentor-not-completed/{mentorID}", app.getMeetingMentorNotCompletedHandler)
 			r.Put("/confirm/{meetingID}", app.updateMeetingConfirmHandler)
 			r.Put("/completed/{meetingID}", app.updateMeetingCompletedHandler)
+			r.Put("/link/{meetingID}", app.updateLinkHandler)
 			r.Delete("/{meetingID}", app.deleteMeetingHandler)
 		})
 		r.Route("/bookingslots", func(r chi.Router) {

@@ -2,6 +2,7 @@
 ```
 docker-compose up --build
 air
+./stripe listen --forward-to localhost:8080/v1/webhook
 ```
 
 ## To start frontend

@@ -214,3 +214,15 @@ func (app *application) getExpertiseHandler(w http.ResponseWriter, r *http.Reque
 		app.internalServerError(w, r, err)
 	}
 }
+
+func (app *application) getCountryHandler(w http.ResponseWriter, r *http.Request) {
+	country, err := app.store.Country.GetCountry(r.Context())
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := JsonResponse(w, http.StatusOK, country); err != nil {
+		app.internalServerError(w, r, err)
+	}
+}

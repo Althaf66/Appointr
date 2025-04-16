@@ -12,9 +12,18 @@ type Expertise struct {
 	Icon_svg string `json:"icon_svg"`
 }
 
+type Country struct {
+	ID       int64  `json:"id"`
+	CountryName     string `json:"countryname"`
+}
+
 var ErrExpertiseNotFound = errors.New("field was not found")
 
 type ExpertiseStore struct {
+	db *sql.DB
+}
+
+type CountryStore struct {
 	db *sql.DB
 }
 
@@ -119,4 +128,31 @@ func (s *ExpertiseStore) GetByID(ctx context.Context, id int64) (*Expertise, err
 		}
 	}
 	return &exp, nil
+}
+
+func (s *CountryStore) GetCountry(ctx context.Context) ([]*Country, error) {
+	query := `SELECT countryname FROM countries`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeOutDuration)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var CountryList []*Country
+	for rows.Next() {
+		var country Country
+		err := rows.Scan(&country.CountryName)
+		if err != nil {
+			return nil, err
+		}
+		CountryList = append(CountryList, &country)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return CountryList, nil
 }

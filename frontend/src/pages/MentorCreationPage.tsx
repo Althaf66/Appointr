@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
-import { BasicDetails } from '../components/mentor-creation/BasicDetails';
 import { GigDetails } from '../components/mentor-creation/GigDetails';
 import { ExperienceDetails } from '../components/mentor-creation/ExperienceDetails';
 import { EducationDetails } from '../components/mentor-creation/EducationDetails';

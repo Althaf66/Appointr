@@ -16,6 +16,11 @@ type RegisterMeetingPayload struct {
 	StartTime   string  `json:"start_time"`
 	StartPeriod string  `json:"start_period"`
 	Amount      float64 `json:"amount"`
+	Link        string `json:"link"`
+}
+
+type UpdateMeetingPayload struct {
+	Link *string `json:"link"`
 }
 
 // createMeetingHandler godoc
@@ -52,6 +57,7 @@ func (app *application) createMeetingHandler(w http.ResponseWriter, r *http.Requ
 		Ispaid:      false,
 		Iscompleted: false,
 		Amount:      payload.Amount,
+		Link: payload.Link,
 	}
 
 	err = app.store.Meetings.CreateMeeting(r.Context(), meeting)
@@ -388,6 +394,52 @@ func (app *application) updateMeetingCompletedHandler(w http.ResponseWriter, r *
 	}
 
 	meeting.Iscompleted = true
+	err = JsonResponse(w, http.StatusOK, meeting)
+	if err != nil {
+		app.internalServerError(w, r, err)
+	}
+}
+
+// updateLinkHandler godoc
+//
+//	@Summary		Update link
+//	@Description	Update link
+//	@Tags			meetings
+//	@Accept			json
+//	@Produce		json
+//	@Param			meetings	path		int64					true	"Meeting ID"
+//	@Param			meetings	body		UpdateMeetingPayload	true	"Meetings"
+//	@Success		200			{object}	store.Meetings
+//	@Failure		400			{object}	error
+//	@Failure		401			{object}	error
+//	@Failure		404			{object}	error
+//	@Failure		500			{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/meetings/link/{meetingID} [put]
+func (app *application) updateLinkHandler(w http.ResponseWriter, r *http.Request) {
+	meetingID, err := strconv.ParseInt(chi.URLParam(r, "meetingID"), 10, 64)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	meeting, err := app.store.Meetings.GetMeetingByID(r.Context(), meetingID)
+	if err != nil {
+		switch {
+		case errors.Is(err, store.ErrNotFound):
+			app.notFoundResponse(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+		}
+		return
+	}
+
+	err = app.store.Meetings.UpdateLink(r.Context(), meeting)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
 	err = JsonResponse(w, http.StatusOK, meeting)
 	if err != nil {
 		app.internalServerError(w, r, err)

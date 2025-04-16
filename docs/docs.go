@@ -1622,6 +1622,68 @@ const docTemplate = `{
                 }
             }
         },
+        "/meetings/link/{meetingID}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update link",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "meetings"
+                ],
+                "summary": "Update link",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Meeting ID",
+                        "name": "meetings",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Meetings",
+                        "name": "meetings",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.UpdateMeetingPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.Meetings"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/meetings/mentor-not-completed/{mentorID}": {
             "get": {
                 "security": [
@@ -3500,6 +3562,9 @@ const docTemplate = `{
                 "day": {
                     "type": "string"
                 },
+                "link": {
+                    "type": "string"
+                },
                 "mentorid": {
                     "type": "integer"
                 },
@@ -3681,6 +3746,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.UpdateMeetingPayload": {
+            "type": "object",
+            "properties": {
+                "link": {
                     "type": "string"
                 }
             }

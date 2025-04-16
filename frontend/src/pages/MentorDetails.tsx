@@ -223,7 +223,8 @@ export const MentorDetails: React.FC = () => {
       date: selectedDate,
       start_time: selectedTimeSlot.time,
       start_period: selectedTimeSlot.period,
-      amount: mentor.gigs && mentor.gigs.length > 0 ? mentor.gigs[0].amount : 0 // Use amount from first gig or default to 0
+      amount: mentor.gigs && mentor.gigs.length > 0 ? mentor.gigs[0].amount : 0, // Use amount from first gig or default to 0
+      link: 'http://localhost:8082/room/create'
     };
 
     try {
@@ -661,7 +662,7 @@ export const MentorDetails: React.FC = () => {
                     }`}
                   >
                     {selectedTimeSlot 
-                      ? `Book Session for ${selectedDate.split(' ').slice(0, 2).join(' ')} ${new Date().getFullYear()} ${mentor.gigs[0]?.amount ? `($${mentor.gigs[0].amount})` : ''}` 
+                      ? `Book Session for ${selectedDate.split(' ').slice(0, 2).join(' ')} ${new Date().getFullYear()} ${mentor.gigs[0]?.amount ? `(₹${mentor.gigs[0].amount})` : ''}` 
                       : 'Select a time slot'}
                   </button>
                 </div>

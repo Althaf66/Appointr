@@ -100,15 +100,15 @@ type Storage struct {
 		UpdateMeetingConfirm(ctx context.Context, meetingID int64) error
 		UpdateMeetingPaid(ctx context.Context, meetingID int64) error
 		UpdateMeetingCompleted(ctx context.Context, meetingID int64) error
+		UpdateLink(ctx context.Context, meeting *Meetings) error
 		DeleteMeeting(ctx context.Context, meetingID int64) error
 		GetMeetingByID(ctx context.Context, id int64) (*Meetings, error)
 	}
 	BookingSlot interface {
 		CreateBookingSlot(ctx context.Context, slot *BookingSlot) error
-		// GetBookingSlotByID(ctx context.Context, id int64) (*BookingSlot, error)
-		// GetBookingSlotByUserID(ctx context.Context, userID int64) ([]*BookingSlot, error)
-		// UpdateBookingSlot(ctx context.Context, slot *BookingSlot) error
-		// DeleteBookingSlot(ctx context.Context, slotID int64) error
+	}
+	Country interface {
+		GetCountry(ctx context.Context) ([]*Country, error)
 	}
 }
 
@@ -126,6 +126,7 @@ func NewPostgresStorage(db *sql.DB) Storage {
 		WorkingAt:   &WorkingAtStore{db},
 		BookingSlot: &BookingStore{db},
 		Meetings:    &MeetingsStore{db},
+		Country:	 &CountryStore{db},
 	}
 }
 

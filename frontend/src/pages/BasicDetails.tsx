@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Globe, Loader2, ChevronRight, User, MapPin, Languages, X, Plus } from 'lucide-react';
+import { Loader2, ChevronRight, User, MapPin, Languages, X, Plus } from 'lucide-react';
 import { API_URL } from '../App';
+
+interface Country {
+  countryname: string;
+}
 
 export const BasicDetailsPage = () => {
   const navigate = useNavigate();
@@ -12,8 +16,29 @@ export const BasicDetailsPage = () => {
     language: [] as string[],
   });
   const [languageInput, setLanguageInput] = useState('');
+  const [countries, setCountries] = useState<Country[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchCountries = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get(`${API_URL}/v1/countries`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        setCountries(response.data.data);
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error fetching countries:', err);
+        setError('Failed to load countries');
+        setIsLoading(false);
+      }
+    };
+    fetchCountries();
+  }, []);
 
   const handleAddLanguage = () => {
     if (languageInput.trim() && !formData.language.includes(languageInput.trim())) {
@@ -114,25 +139,22 @@ export const BasicDetailsPage = () => {
                   </div>
                 </label>
                 <div className="relative">
-                  <select
-                    required
-                    value={formData.country}
-                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg appearance-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  >
+                <select
+          required
+          value={formData.country}
+          onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+          className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500"
+          disabled={isLoading} // Disable while loading
+        >
                     <option value="">Select your country</option>
-                    <option value="US">United States</option>
-                    <option value="UK">United Kingdom</option>
-                    <option value="CA">Canada</option>
-                    <option value="AU">Australia</option>
-                    <option value="IN">India</option>
-                    <option value="DE">Germany</option>
-                    <option value="FR">France</option>
-                    <option value="JP">Japan</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
-                    <Globe size={18} />
-                  </div>
+          {countries.map((country) => (
+            <option key={country.countryname} value={country.countryname}>
+              {country.countryname}
+            </option>
+          ))}
+        </select>
+        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+                  
                 </div>
               </div>
 

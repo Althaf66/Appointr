@@ -114,6 +114,8 @@ definitions:
         type: string
       day:
         type: string
+      link:
+        type: string
       mentorid:
         type: integer
       start_period:
@@ -235,6 +237,11 @@ definitions:
       expertise:
         type: string
       title:
+        type: string
+    type: object
+  main.UpdateMeetingPayload:
+    properties:
+      link:
         type: string
     type: object
   main.UpdateMentorPayload:
@@ -1628,6 +1635,47 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create a new meeting
+      tags:
+      - meetings
+  /meetings/link/{meetingID}:
+    put:
+      consumes:
+      - application/json
+      description: Update link
+      parameters:
+      - description: Meeting ID
+        in: path
+        name: meetings
+        required: true
+        type: integer
+      - description: Meetings
+        in: body
+        name: meetings
+        required: true
+        schema:
+          $ref: '#/definitions/main.UpdateMeetingPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Meetings'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update link
       tags:
       - meetings
   /meetings/mentor-not-completed/{mentorID}:
