@@ -1,3 +1,8 @@
+## For detailed documentation
+
+https://deepwiki.com/Althaf66/Appointr
+
+
 ## To start backend
 ```
 docker-compose up --build
