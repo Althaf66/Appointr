@@ -1,3 +1,7 @@
+Our video conferencing platform integrates paid appointment scheduling, real-time messaging, and
+high-quality video meetings into a seamless solution. It enables secure transactions, professional
+consultations, and easy client bookings based on expertise
+
 ## For detailed documentation
 
 https://deepwiki.com/Althaf66/Appointr
